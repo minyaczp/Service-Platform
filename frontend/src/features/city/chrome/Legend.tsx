@@ -13,6 +13,7 @@ export function Legend() {
         <span className={s.legendItem}><span className={s.legendDot} style={tone(healthTone('healthy'))} />Healthy</span>
         <span className={s.legendItem}><span className={s.legendDot} style={tone(healthTone('degraded'))} />Degraded</span>
         <span className={s.legendItem}><span className={s.legendDash} />Deploying</span>
+        <span className={s.legendItem}><span className={s.legendDot} style={tone(healthTone('down'))} />Down</span>
       </div>
       <div className={s.legendNote}>Height = traffic · Shape = domain</div>
     </div>

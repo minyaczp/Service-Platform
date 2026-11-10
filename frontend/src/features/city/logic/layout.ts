@@ -1,7 +1,7 @@
 import type { CityLayout, District, Footprint, Service } from '../../../shared/domain/service';
 
-/** Footprint side as a fraction of its cell — demo footprint 80 in a 113 cell (NI-01 Conditions). */
-export const FOOTPRINT_RATIO = 0.7;
+/** Footprint side as a fraction of its cell. 0.55 leaves a street ≈ one footprint wide between neighbours. */
+export const FOOTPRINT_RATIO = 0.55;
 const MIN_COLS = 3;
 
 interface Grid {

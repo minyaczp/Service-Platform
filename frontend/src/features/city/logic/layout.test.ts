@@ -39,13 +39,13 @@ describe('layout — placement', () => {
     for (const s of mockServices) expect(inside(city.footprints.get(s.reg.id) as Footprint, districtFor(s.reg.domain).plate)).toBe(true);
   });
 
-  it('10 services in one district use a 4×4 grid with 59.5×59.5 footprints', () => {
+  it('10 services in one district use a 4×4 grid with 46.75×46.75 footprints', () => {
     const ten = Array.from({ length: 10 }, (_, i) => withDomain(first, `s${String(i).padStart(2, '0')}`, 'Commerce'));
     const fps = [...layout(ten, districtFor).footprints.values()];
     expect(fps).toHaveLength(10);
     for (const fp of fps) {
-      expect(fp.w).toBeCloseTo(59.5);
-      expect(fp.d).toBeCloseTo(59.5);
+      expect(fp.w).toBeCloseTo(46.75);
+      expect(fp.d).toBeCloseTo(46.75);
       expect(inside(fp, districtFor('Commerce').plate)).toBe(true);
     }
     expect(allDisjoint(fps)).toBe(true);

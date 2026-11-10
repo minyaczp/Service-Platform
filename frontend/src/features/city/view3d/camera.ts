@@ -1,4 +1,5 @@
 import type { Footprint } from '../../../shared/domain/service';
+import { PLANE_PX_PER_UNIT } from '../logic/visual';
 import { centreOf } from '../logic/world';
 
 /** Orbit camera: target (tx, ty, tz), radius r, azimuth th, polar ph, horizontal view-offset shift. */
@@ -14,7 +15,7 @@ export interface Cam {
 
 /** Handoff §City view 3D. */
 export const CAMERA = {
-  minR: 12, maxR: 200, minPh: 0.3, maxPh: 1.38,
+  minR: 12, maxR: 260, minPh: 0.3, maxPh: 1.38,
   flyMs: 1200, autoRotate: 0.0007, clickPx: 5,
   overview: { tx: 0, ty: 0, tz: 0, r: 120, ph: 0.95, shift: 0 },
   start: { tx: 0, ty: 0, tz: 0, r: 120, th: 0.9, ph: 0.95, shift: 0 },
@@ -39,4 +40,26 @@ export function tweenAt(from: Cam, to: Omit<Cam, 'th'>, t: number): Cam {
 export function flyTarget(fp: Footprint, h: number): Omit<Cam, 'th'> {
   const c = centreOf(fp);
   return { tx: c.x, ty: h * 0.55, tz: c.z, r: Math.max(32, h * 2.2), ph: 1.1, shift: 0.14 };
+}
+
+/** The handoff framed its 72-unit plate span at r 120; keep that ratio for any city size. */
+const OVERVIEW_R_PER_UNIT = 120 / 72;
+
+/** Smallest footprint covering every plate (plane px). */
+function boundsOf(plates: readonly Footprint[]): Footprint {
+  const x = Math.min(...plates.map((p) => p.x));
+  const z = Math.min(...plates.map((p) => p.z));
+  const w = Math.max(...plates.map((p) => p.x + p.w)) - x;
+  const d = Math.max(...plates.map((p) => p.z + p.d)) - z;
+  return { x, z, w, d };
+}
+
+/** Overview goal framing the drawn plates: centred on them, r scaled to their span. No plates → the handoff overview. */
+export function overviewOf(plates: readonly Footprint[]): Omit<Cam, 'th'> {
+  if (plates.length === 0) return CAMERA.overview;
+  const b = boundsOf(plates);
+  const c = centreOf(b);
+  const span = Math.max(b.w, b.d) / PLANE_PX_PER_UNIT;
+  const r = Math.min(CAMERA.maxR, Math.max(CAMERA.minR, span * OVERVIEW_R_PER_UNIT));
+  return { ...CAMERA.overview, tx: c.x, tz: c.z, r };
 }
