@@ -7,6 +7,9 @@ export interface TopBarProps {
   readonly mode: ViewMode;
   readonly onOverview: () => void;
   readonly onMode: (m: ViewMode) => void;
+  /** 3D overview rotation (NI-05); the button shows only in 3D. */
+  readonly autoRotate: boolean;
+  readonly onToggleRotate: () => void;
 }
 
 const MODES: readonly { readonly mode: ViewMode; readonly label: string }[] = [
@@ -29,12 +32,25 @@ function Crumb({ selected, onOverview }: Pick<TopBarProps, 'selected' | 'onOverv
   );
 }
 
-export function TopBar({ selected, mode, onOverview, onMode }: TopBarProps) {
+/** Icon-only pause / play (NI-05 Decision 6): pause bars while rotating, play triangle while stopped. */
+function RotateButton({ on, onToggle }: { readonly on: boolean; readonly onToggle: () => void }) {
+  return (
+    <button type="button" className={`${s.glass} ${s.rotate}`} onClick={onToggle} aria-pressed={on}
+      aria-label={on ? 'Pause rotation' : 'Resume rotation'} title={on ? 'Pause rotation' : 'Resume rotation'}>
+      <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true">
+        {on ? <path d="M3 2h3v10H3zM8 2h3v10H8z" fill="currentColor" /> : <path d="M3.5 2l8 5-8 5z" fill="currentColor" />}
+      </svg>
+    </button>
+  );
+}
+
+export function TopBar({ selected, mode, onOverview, onMode, autoRotate, onToggleRotate }: TopBarProps) {
   return (
     <div className={s.topbar}>
       <Crumb selected={selected} onOverview={onOverview} />
       <div className={s.spacer} />
       {selected.length > 0 && <button type="button" className={`${s.glass} ${s.overview}`} onClick={onOverview}>Overview</button>}
+      {mode === '3d' && <RotateButton on={autoRotate} onToggle={onToggleRotate} />}
       <div className={`${s.glass} ${s.toggle}`}>
         {MODES.map((m) => (
           <button key={m.mode} type="button" className={`${s.mode} ${mode === m.mode ? s.modeOn : ''}`} onClick={() => onMode(m.mode)}>{m.label}</button>

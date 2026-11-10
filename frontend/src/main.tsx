@@ -26,6 +26,8 @@ export interface AppState {
   readonly modal: { readonly kind: 'closed' } | { readonly kind: 'open'; readonly id: string };
   readonly session: 'signedOut' | 'signedIn';
   readonly prefs: Prefs;
+  /** 3D overview auto-rotate; deliberately not in `Prefs`, so it is never saved (NI-05 Decision 2). */
+  readonly autoRotate: boolean;
   applyEvent(e: SourceEvent): void;
   select(id: string): void;
   clearSelection(): void;
@@ -34,6 +36,7 @@ export interface AppState {
   login(): void;
   toggleFav(id: string): void;
   setMode(m: ViewMode): void;
+  toggleAutoRotate(): void;
 }
 
 const CLOSED = { kind: 'closed' } as const;
@@ -53,7 +56,7 @@ function nextServices(current: readonly Service[], e: SourceEvent): readonly Ser
 /** The one store (CLAUDE.md §0): state only, no I/O — source and storage are wired below. */
 export function createAppStore(prefs: Prefs): StoreApi<AppState> {
   return createStore<AppState>()((set) => ({
-    services: [], selection: NONE, modal: CLOSED, session: 'signedOut', prefs,
+    services: [], selection: NONE, modal: CLOSED, session: 'signedOut', prefs, autoRotate: true,
     applyEvent: (e) => set((st) => ({ services: nextServices(st.services, e) })),
     select: (id) => set((st) => ({ selection: { kind: 'service', id }, modal: CLOSED, prefs: { ...st.prefs, recent: pushRecent(st.prefs.recent, id) } })),
     clearSelection: () => set({ selection: NONE, modal: CLOSED }),
@@ -62,6 +65,7 @@ export function createAppStore(prefs: Prefs): StoreApi<AppState> {
     login: () => set({ session: 'signedIn' }),
     toggleFav: (id) => set((st) => ({ prefs: { ...st.prefs, favs: toggleFav(st.prefs.favs, id) } })),
     setMode: (mode) => set((st) => ({ prefs: { ...st.prefs, mode } })),
+    toggleAutoRotate: () => set((st) => ({ autoRotate: !st.autoRotate })),
   }));
 }
 
@@ -100,8 +104,9 @@ function City({ store }: { readonly store: StoreApi<AppState> }) {
     <div className={s.app}>
       <Sidebar services={st.services} prefs={st.prefs} selection={st.selection} onSelect={st.select} onToggleFav={st.toggleFav} />
       <main className={s.main}>
-        {st.prefs.mode === '3d' ? <CityView3D {...viewProps} /> : <CityViewIso {...viewProps} />}
-        <TopBar selected={selectedOf(st)} mode={st.prefs.mode} onOverview={st.clearSelection} onMode={st.setMode} />
+        {st.prefs.mode === '3d' ? <CityView3D {...viewProps} autoRotate={st.autoRotate} /> : <CityViewIso {...viewProps} />}
+        <TopBar selected={selectedOf(st)} mode={st.prefs.mode} onOverview={st.clearSelection} onMode={st.setMode}
+          autoRotate={st.autoRotate} onToggleRotate={st.toggleAutoRotate} />
         {st.modal.kind === 'closed' && <><Legend /><Hint mode={st.prefs.mode} /></>}
         <Overlay st={st} />
       </main>

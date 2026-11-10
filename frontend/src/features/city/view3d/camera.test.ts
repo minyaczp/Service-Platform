@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { easeInOutCubic, flyTarget, overviewOf, tweenAt, type Cam } from './camera';
+import { autoRotating, easeInOutCubic, flyTarget, overviewOf, tweenAt, type Cam } from './camera';
 import { stageScale, stageTransform } from '../viewIso/isoTransform';
 
 const from: Cam = { tx: 0, ty: 0, tz: 0, r: 120, th: 0.9, ph: 0.95, shift: 0 };
@@ -57,5 +57,13 @@ describe('overviewOf', () => {
   });
   it('falls back to the handoff overview when no plate is drawn', () => {
     expect(overviewOf([])).toMatchObject({ tx: 0, tz: 0, r: 120 });
+  });
+});
+
+describe('autoRotating (NI-05)', () => {
+  it('turns only when enabled and nothing is selected', () => {
+    expect(autoRotating('', true)).toBe(true);
+    expect(autoRotating('', false)).toBe(false);
+    expect(autoRotating('payments', true)).toBe(false);
   });
 });

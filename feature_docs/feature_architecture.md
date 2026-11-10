@@ -30,7 +30,7 @@ frontend/public/mock/      openapi/<id>.json ×14 · ui/placeholder.html
 canvas textures — sit in views and in `shared/persistence` / `shared/source`. No feature imports another;
 `main.tsx` composes them and passes callbacks as props.
 
-**State:** one Zustand store (`AppState`, `main.tsx`) holds services, selection, modal, session and prefs. It
+**State:** one Zustand store (`AppState`, `main.tsx`) holds services, selection, modal, session, prefs and `autoRotate` (NI-05; not part of `prefs`, never saved). It
 does no I/O. `main.tsx` subscribes it to the source and saves prefs on change. UI-only state (sidebar open,
 search text, iso rotation / zoom) is component-local (NI-01 Decided I4).
 
