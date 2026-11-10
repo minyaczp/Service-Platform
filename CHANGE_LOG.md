@@ -1,5 +1,17 @@
 # CHANGE_LOG
 
+## 2026-11-10 — City density & chrome fixes vs. the handoff demo (frontend)
+
+- 3D city: `PLANE_PX_PER_UNIT` 10 → 7 and `FOOTPRINT_RATIO` 0.7 → 0.55, so 5–6 buildings per district stand
+  on streets ≈ one footprint wide instead of forming a wall; ground grid and road lengths follow the scale.
+- Camera: `overviewOf(plates)` frames the drawn plates (r = span × 120/72, the demo's ratio; 171 for the
+  four districts); `CAMERA.maxR` 200 → 260; fog distance follows the overview r.
+- Sidebar: `.row` gets `box-sizing: border-box` (rows were 20 px wider than the list, pushing the star column
+  to the edge); footer counts add `down` and wrap per item.
+- Legend adds Down.
+- Tests: 53 (layout footprint expectation 59.5 → 46.75; 2 new `overviewOf` cases). Typecheck, lint
+  (0 warnings), test and build pass.
+
 ## 2026-11-09 — NI-01 · Gridline Service City — Phase 1 frontend with mock data (frontend)
 
 - New app `frontend/` (React 19 + TS 6 strict + Vite 8; @react-three/fiber + drei; Zustand; Scalar), 19

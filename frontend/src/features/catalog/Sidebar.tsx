@@ -110,7 +110,7 @@ function Footer({ services }: { readonly services: readonly Service[] }) {
     <div className={s.footer}>
       <div>{services.length} services registered</div>
       <div className={s.counts}>
-        {(['healthy', 'degraded', 'deploying'] as const).map((st) => (
+        {(['healthy', 'degraded', 'deploying', 'down'] as const).map((st) => (
           <span key={st} className={s.count}><span className={s.countDot} style={tone(healthTone(st))} />{n(st)} {st}</span>
         ))}
       </div>

@@ -9,7 +9,7 @@ import { centreOf } from '../logic/world';
 import { Arcs } from './Arcs';
 import { AssetsContext, createAssets, disposeAssets } from './assets';
 import { Building, topOf } from './Building';
-import { CAMERA, flyTarget } from './camera';
+import { flyTarget, overviewOf } from './camera';
 import { Fillers } from './Fillers';
 import { Ground, Plate } from './Ground';
 import { OrbitRig } from './OrbitRig';
@@ -56,7 +56,7 @@ function useGoal(services: readonly Service[], layout: CityLayout, selection: Se
   return useMemo(() => {
     const svc = services.find((x) => x.reg.id === id);
     const fp = layout.footprints.get(id);
-    return svc && fp ? flyTarget(fp, heightOf(svc.status.rps)) : CAMERA.overview;
+    return svc && fp ? flyTarget(fp, heightOf(svc.status.rps)) : overviewOf(layout.districts.map((d) => d.plate));
   }, [services, layout, id]);
 }
 
@@ -70,7 +70,7 @@ function Scene({ services, layout, selection, onSelect }: CityViewProps) {
   const arcs = useMemo(() => arcsOf(services, layout), [services, layout]);
   return (
     <AssetsContext.Provider value={assets}>
-      <Atmosphere />
+      <Atmosphere layout={layout} />
       <Ground />
       {layout.districts.map((d) => <Plate key={d.id} district={d} />)}
       <Fillers list={filler} />
@@ -92,11 +92,16 @@ function useHover() {
   return { hover, onHover };
 }
 
-/** Fog and lights (demo :750-753). */
-function Atmosphere() {
+/** Demo fog 150→320 at overview r 120: fog starts 30 past the overview camera and fades over 170. */
+const FOG_START_PAST_R = 30;
+const FOG_DEPTH = 170;
+
+/** Fog and lights (demo :750-753); fog distance follows the overview radius so a larger city is not swallowed. */
+function Atmosphere({ layout }: { readonly layout: CityLayout }) {
+  const near = useMemo(() => overviewOf(layout.districts.map((d) => d.plate)).r, [layout]) + FOG_START_PAST_R;
   return (
     <>
-      <fog attach="fog" args={[0x070b13, 150, 320]} />
+      <fog attach="fog" args={[0x070b13, near, near + FOG_DEPTH]} />
       <hemisphereLight args={[0x6b95d8, 0x04060a, 0.8]} />
       <directionalLight color={0xa9c8ff} intensity={1} position={[-50, 90, 40]} />
     </>

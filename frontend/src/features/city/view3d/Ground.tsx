@@ -6,7 +6,9 @@ import { centreOf } from '../logic/world';
 import { labelTexture } from './textures';
 
 const PLATE_H = 0.3;
-const ROAD_LEN = 84;
+/** Demo sizes in plane px (road 84, grid 120 world units at 10 px/unit), so they follow PLANE_PX_PER_UNIT. */
+const ROAD_LEN = 840 / PLANE_PX_PER_UNIT;
+const GRID_SIZE = 1200 / PLANE_PX_PER_UNIT;
 
 /** Ground, grid, crossing roads (demo :754-758). */
 export function Ground() {
@@ -16,7 +18,7 @@ export function Ground() {
         <planeGeometry args={[600, 600]} />
         <meshStandardMaterial color={0x070c16} roughness={1} />
       </mesh>
-      <gridHelper args={[120, 30, 0x1b3a5a, 0x10213a]} position-y={0.02} />
+      <gridHelper args={[GRID_SIZE, 30, 0x1b3a5a, 0x10213a]} position-y={0.02} />
       {[[ROAD_LEN, 0.25], [0.25, ROAD_LEN]].map(([w, d]) => (
         <mesh key={`${w}`} rotation-x={-Math.PI / 2} position-y={0.05}>
           <planeGeometry args={[w ?? 0, d ?? 0]} />

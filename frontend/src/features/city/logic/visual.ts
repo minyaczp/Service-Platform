@@ -5,8 +5,11 @@ const BASE_HEIGHT = 10;
 const RPS_PER_UNIT = 100;
 /** Iso px per 3D world unit (handoff: iso height = H3D × 7). */
 export const ISO_PX_PER_UNIT = 7;
-/** Plane px per 3D world unit (demo: (x - 400) / 10). */
-export const PLANE_PX_PER_UNIT = 10;
+/**
+ * Plane px per 3D world unit. The demo used 10 for 5 services; at 22 services a district holds 5–6
+ * buildings, so 7 widens the streets between them while heights (world units, from rps) stay as specified.
+ */
+export const PLANE_PX_PER_UNIT = 7;
 export const PLANE_SIZE = 800;
 
 export function heightOf(rps: number): number {
