@@ -96,7 +96,7 @@ fly-to behave as before. On: today's behaviour.
 
 | # | Choice | Rejected | Why |
 |---|---|---|---|
-| DD1 | Glass chip `Auto-rotate: On/Off`, top 64 / left 16, 3D only, same look as NI-03's Buildings chip | Button in `TopBar` · keyboard shortcut | NI-03 precedent; `TopBar` is shared by both views (would need a mode branch); no shortcut asked |
+| DD1 | A glass button in `TopBar`, directly left of the 3D \| Isometric toggle (after Overview when shown); one click toggles rotating ↔ stopped; 3D only | Chip at top 64 / left 16 (NI-03 style) · keyboard shortcut | Operator, Decision 3 |
 | DD2 | Component-local `useState(true)` in `CityView3D`; resets to On on reload or after switching to Isometric and back | Field in `gridline.state` | Persisting changes the stored schema — §5 halt list; NI-03 DD3 made the same call |
 | DD3 | Pure `autoRotating(selectedId, enabled)` in `camera.ts`, true only when nothing is selected and enabled | Inline `&&` in JSX | Testable seam for the rule; `camera.ts` already holds `CAMERA.autoRotate` |
 | DD4 | Chip styles rebuilt in `CityView3D.module.css` (`.toggle`, `.toggleOn`, `.toggleOff`), not imported from `viewIso` | Share NI-03's CSS | §0 *Reuse is designed*: features slices' views change independently; recorded as a rebuilt copy |
@@ -122,6 +122,7 @@ fly-to behave as before. On: today's behaviour.
 | # | Question | Answer | Authority |
 |---|---|---|---|
 | 1 | Split from NI-04 | Own item, after NI-04 | operator, 2026-11-10 |
+| 3 | Placement and control | A button left of the 3D \| Isometric toggle; clicking switches between stopped and rotating | operator, 2026-11-10 |
 
 **Explicitly NOT changing:** `OrbitRig` (prop already exists), `AppState`, `Prefs` / `gridline.state`, `TopBar`,
 `CityViewIso`, fly-to / drag / zoom / pan, pins (NI-04).
@@ -142,6 +143,7 @@ fly-to behave as before. On: today's behaviour.
 | # | Question | Recommendation |
 |---|---|---|
 | 2 | Remember the choice across reloads? | No (DD2) — schema change is a §5 halt; revisit as its own item if wanted |
-| 3 | Chip placement and wording | DD1 |
+| 5 | Where the on/off state lives, now that `TopBar` (renders it) and `CityView3D` (uses it) are siblings in `main.tsx` | Store field `autoRotate` + action `toggleAutoRotate` in `AppState`, not saved to `gridline.state` (edits flagged `main.tsx`) |
+| 6 | Button label | `⏸ Pause` while rotating / `▶ Rotate` while stopped, `aria-pressed` |
 | 4 | Manual Verification wording | as drafted above |
 
