@@ -122,6 +122,7 @@ fly-to behave as before. On: today's behaviour.
 | # | Question | Answer | Authority |
 |---|---|---|---|
 | 1 | Split from NI-04 | Own item, after NI-04 | operator, 2026-11-10 |
+| 2 | Remember the choice across reloads | No — not written to `gridline.state`; a reload starts rotating | operator, 2026-11-10 |
 | 3 | Placement and control | A button left of the 3D \| Isometric toggle; clicking switches between stopped and rotating | operator, 2026-11-10 |
 
 **Explicitly NOT changing:** `OrbitRig` (prop already exists), `AppState`, `Prefs` / `gridline.state`, `TopBar`,
@@ -142,7 +143,6 @@ fly-to behave as before. On: today's behaviour.
 
 | # | Question | Recommendation |
 |---|---|---|
-| 2 | Remember the choice across reloads? | No (DD2) — schema change is a §5 halt; revisit as its own item if wanted |
 | 5 | Where the on/off state lives, now that `TopBar` (renders it) and `CityView3D` (uses it) are siblings in `main.tsx` | Store field `autoRotate` + action `toggleAutoRotate` in `AppState`, not saved to `gridline.state` (edits flagged `main.tsx`) |
 | 6 | Button label | `⏸ Pause` while rotating / `▶ Rotate` while stopped, `aria-pressed` |
 | 4 | Manual Verification wording | as drafted above |
