@@ -1,5 +1,18 @@
 # CHANGE_LOG
 
+## 2026-11-10 — NI-04 · Pins as a DOM overlay (fix StrictMode unmount error) (frontend)
+
+- `city/view3d`: pins no longer use drei `<Html>` (one React root per pin, unmounted synchronously). New
+  `PinLayer` renders them in the app's tree beside the canvas; new `PinProjector` positions them each frame and
+  writes the DOM only when a placement changes. `Pin` is markup only.
+- `city/logic/pinProjection.ts`: `projectPin`, `samePlacement` (pure).
+- `@react-three/drei` removed from `frontend/package.json` (its only import was `Pins.tsx`).
+- Measured, dev: "Attempted to synchronously unmount a root…" per step Login / select / Use service / Esc ×2 /
+  Isometric / back to 3D went 22/0/0/0/0/22 → 0/0/0/0/0/0; production 0 → 0.
+- Tests 53 → 62 (`pinProjection` 7, `PinLayer` 2). Typecheck, lint (0 warnings), test, build pass.
+- Docs: `feature_city.md`, `project_feature.md` §city, `feature_architecture.md` (stack line; plate px → world
+  units row now says 3D ÷ 7, left stale by the 2026-11-10 density change).
+
 ## 2026-11-10 — City density & chrome fixes vs. the handoff demo (frontend)
 
 - 3D city: `PLANE_PX_PER_UNIT` 10 → 7 and `FOOTPRINT_RATIO` 0.7 → 0.55, so 5–6 buildings per district stand
