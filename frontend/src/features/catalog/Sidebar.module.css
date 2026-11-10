@@ -1,0 +1,93 @@
+.aside {
+  flex-shrink: 0;
+  height: 100%;
+  background: var(--sidebar);
+  border-right: 1px solid var(--border-1);
+  transition: width 0.28s ease;
+  overflow: hidden;
+  position: relative;
+  z-index: 5;
+}
+.open { width: 288px; }
+.closed { width: 64px; }
+
+.panel { display: flex; flex-direction: column; height: 100%; width: 288px; }
+
+.header { display: flex; align-items: center; gap: 10px; padding: 18px 14px 14px 16px; }
+.logo {
+  width: 28px; height: 28px; border-radius: 7px; border: 1.5px solid var(--accent);
+  display: grid; place-items: center; box-shadow: 0 0 14px rgba(95, 225, 236, 0.35); flex-shrink: 0;
+}
+.logoInner { width: 9px; height: 9px; background: var(--accent); transform: rotate(45deg); }
+.titleBox { flex: 1; min-width: 0; }
+.title { font-weight: 600; font-size: 15px; }
+.subtitle {
+  font-family: var(--font-mono); font-size: 10.5px; color: var(--label);
+  letter-spacing: 0.08em; text-transform: uppercase;
+}
+.iconButton {
+  width: 30px; height: 30px; border-radius: 8px; border: 1px solid var(--border-3);
+  background: transparent; color: var(--muted); cursor: pointer; font-size: 14px;
+}
+.iconButton:hover { color: var(--text); border-color: rgba(130, 190, 255, 0.35); }
+
+.searchWrap { padding: 0 14px 12px; }
+.search {
+  display: flex; align-items: center; gap: 8px; background: var(--input-bg);
+  border: 1px solid var(--border-2); border-radius: 9px; padding: 0 10px;
+}
+.searchIcon { font-family: var(--font-mono); font-size: 12px; color: var(--label); }
+.searchInput {
+  flex: 1; min-width: 0; background: transparent; border: none; outline: none;
+  color: var(--text); font-size: 13px; padding: 9px 0;
+}
+
+.list { flex: 1; overflow: auto; padding: 2px 10px 16px; display: flex; flex-direction: column; gap: 18px; }
+.section { display: flex; flex-direction: column; gap: 2px; }
+.sectionLabel {
+  display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 10.5px;
+  letter-spacing: 0.1em; text-transform: uppercase; color: var(--label); padding: 0 10px 6px; white-space: nowrap;
+}
+
+.row {
+  display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 8px;
+  cursor: pointer; background: transparent; border: none; color: inherit; text-align: left; width: 100%;
+}
+.row:hover { background: rgba(95, 225, 236, 0.05); }
+.rowSelected { background: var(--accent-select); }
+.rowSelected:hover { background: var(--accent-select); }
+.name {
+  flex: 1; min-width: 0; font-size: 14px; color: var(--text-2);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.rowSelected .name { color: #fff; }
+.ver { font-family: var(--font-mono); font-size: 11px; color: var(--label); }
+.star { width: 20px; text-align: center; color: var(--disabled); font-size: 13px; cursor: pointer; }
+.starOn { color: var(--accent); }
+
+.empty { padding: 20px 10px; font-size: 13px; color: var(--label); }
+
+.footer {
+  border-top: 1px solid var(--border-1); padding: 14px 16px; display: flex; flex-direction: column; gap: 8px;
+  font-family: var(--font-mono); font-size: 11px; color: var(--label);
+}
+.counts { display: flex; gap: 14px; }
+.count { display: flex; align-items: center; gap: 6px; }
+.countDot { width: 6px; height: 6px; border-radius: 50%; background: var(--tone); }
+
+.rail { width: 64px; height: 100%; display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 18px 0; overflow: auto; box-sizing: border-box; }
+.expand {
+  width: 36px; height: 36px; border-radius: 9px; border: 1.5px solid var(--accent); background: transparent;
+  color: var(--accent); cursor: pointer; font-size: 14px; box-shadow: 0 0 14px rgba(95, 225, 236, 0.3);
+  margin-bottom: 10px; flex-shrink: 0;
+}
+.tile {
+  position: relative; width: 40px; height: 40px; border-radius: 10px; border: 1px solid var(--border-3);
+  background: transparent; display: grid; place-items: center; font-family: var(--font-mono); font-size: 12px;
+  color: var(--text-2); cursor: pointer; flex-shrink: 0;
+}
+.tileSelected { border-color: var(--accent); background: var(--accent-select); }
+.tileDot {
+  position: absolute; top: -3px; right: -3px; width: 9px; height: 9px; border-radius: 50%;
+  background: var(--tone); box-shadow: 0 0 8px var(--tone); border: 2px solid var(--sidebar);
+}

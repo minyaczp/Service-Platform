@@ -1,0 +1,82 @@
+/* Design tokens — handoff README §Design Tokens. Health colours mirror features/city/logic/visual.ts. */
+:root {
+  --bg: #070b13;
+  --sidebar: #0a0f19;
+  --surface: #0b1220;
+  --surface-deep: #060a12;
+  --surface-ground: #070c16;
+  --input-bg: #0d1424;
+
+  --glass: rgba(10, 16, 28, 0.78);
+  --glass-strong: rgba(10, 16, 28, 0.88);
+  --border-1: rgba(130, 190, 255, 0.1);
+  --border-2: rgba(130, 190, 255, 0.14);
+  --border-3: rgba(130, 190, 255, 0.16);
+  --border-4: rgba(130, 190, 255, 0.22);
+
+  --text: #e6edf5;
+  --text-2: #c9d6e4;
+  --text-3: #cfdae6;
+  --text-4: #b4c2d4;
+  --text-button: #cfe0f2;
+  --muted: #9aa8bc;
+  --label: #7f8da3;
+  --disabled: #56657a;
+  --crumb-sep: #3d4b60;
+
+  --accent: #5fe1ec;
+  --accent-hover: #8ff0f7;
+  --accent-light: #9ff3fa;
+  --on-accent: #04121a;
+  --accent-soft: rgba(95, 225, 236, 0.16);
+  --accent-select: rgba(95, 225, 236, 0.1);
+  --blue: #6aa2ff;
+  --amber: #f2b45a;
+  --amber-text: #f6cf95;
+  --red: #ff6b6b;
+  --red-text: #ff9a9a;
+  --green: #7fe0a6;
+
+  --health-healthy: #5fe1ec;
+  --health-degraded: #f2b45a;
+  --health-deploying: #6aa2ff;
+  --health-down: #ff6b6b;
+
+  --font-sans: 'Instrument Sans', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  --shadow-panel: 0 20px 60px rgba(0, 0, 0, 0.5);
+  --shadow-modal: 0 30px 80px rgba(0, 0, 0, 0.6);
+  --glow-primary: 0 0 24px rgba(95, 225, 236, 0.35);
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+input,
+select,
+textarea,
+button {
+  font-family: inherit;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-2);
+  border-radius: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}

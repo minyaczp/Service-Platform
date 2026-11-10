@@ -1,0 +1,9 @@
+# serena MCP server — local cache, memories and project config
+.serena/
+
+# frontend build output and dependencies
+frontend/node_modules/
+frontend/dist/
+
+# Vite dependency cache (created when serving the demo folder)
+.vite/

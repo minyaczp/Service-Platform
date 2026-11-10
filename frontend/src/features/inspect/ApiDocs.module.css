@@ -1,0 +1,33 @@
+.note {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--label);
+  letter-spacing: 0.08em;
+  padding: 12px 0;
+}
+
+.error {
+  padding: 10px 12px;
+  border-radius: 9px;
+  background: rgba(255, 107, 107, 0.08);
+  border: 1px solid rgba(255, 107, 107, 0.35);
+  font-size: 13px;
+  color: var(--red-text);
+}
+
+.frame {
+  border: 1px solid var(--border-1);
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--surface-deep);
+  --scalar-background-1: var(--surface-deep);
+  --scalar-background-2: var(--surface);
+  --scalar-background-3: var(--input-bg);
+  --scalar-color-1: var(--text);
+  --scalar-color-2: var(--text-4);
+  --scalar-color-3: var(--label);
+  --scalar-color-accent: var(--accent);
+  --scalar-border-color: var(--border-2);
+  --scalar-font: var(--font-sans);
+  --scalar-font-code: var(--font-mono);
+}

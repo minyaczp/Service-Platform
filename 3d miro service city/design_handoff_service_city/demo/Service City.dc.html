@@ -1,0 +1,1078 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+html,body{margin:0;padding:0;height:100%;background:#070b13;color:#e6edf5;-webkit-font-smoothing:antialiased}
+a{color:#5fe1ec;text-decoration:none} a:hover{color:#9ff3fa}
+input,select,textarea,button{font-family:inherit}
+::-webkit-scrollbar{width:8px;height:8px} ::-webkit-scrollbar-thumb{background:rgba(130,190,255,0.14);border-radius:8px} ::-webkit-scrollbar-track{background:transparent}
+</style>
+</helmet>
+<div style="display:flex; width:100%; height:100vh; background:#070b13; color:#e6edf5; font-family:'Instrument Sans',system-ui,sans-serif; overflow:hidden">
+
+<aside style="width:{{ sideW }}; flex-shrink:0; height:100%; background:#0a0f19; border-right:1px solid rgba(130,190,255,0.10); transition:width .28s ease; overflow:hidden; position:relative; z-index:5">
+  <sc-if value="{{ sidebarOpen }}" hint-placeholder-val="{{ true }}">
+    <div style="display:flex; flex-direction:column; height:100%; width:288px">
+      <div style="display:flex; align-items:center; gap:10px; padding:18px 14px 14px 16px">
+        <div style="width:28px; height:28px; border-radius:7px; border:1.5px solid #5fe1ec; display:grid; place-items:center; box-shadow:0 0 14px rgba(95,225,236,0.35); flex-shrink:0">
+          <div style="width:9px; height:9px; background:#5fe1ec; transform:rotate(45deg)"></div>
+        </div>
+        <div style="flex:1; min-width:0">
+          <div style="font-weight:600; font-size:15px">Gridline</div>
+          <div style="font-family:'JetBrains Mono',monospace; font-size:10.5px; color:#7f8da3; letter-spacing:.08em; text-transform:uppercase">Service City</div>
+        </div>
+        <button onClick="{{ toggleSidebar }}" title="Collapse sidebar" style="width:30px; height:30px; border-radius:8px; border:1px solid rgba(130,190,255,0.16); background:transparent; color:#9aa8bc; cursor:pointer; font-size:14px" style-hover="color:#e6edf5; border-color:rgba(130,190,255,0.35)">«</button>
+      </div>
+      <div style="padding:0 14px 12px">
+        <div style="display:flex; align-items:center; gap:8px; background:#0d1424; border:1px solid rgba(130,190,255,0.14); border-radius:9px; padding:0 10px">
+          <span style="font-family:'JetBrains Mono',monospace; font-size:12px; color:#7f8da3">⌕</span>
+          <input value="{{ query }}" onChange="{{ onQuery }}" placeholder="Search services" style="flex:1; min-width:0; background:transparent; border:none; outline:none; color:#e6edf5; font-size:13px; padding:9px 0">
+        </div>
+      </div>
+      <div style="flex:1; overflow:auto; padding:2px 10px 16px; display:flex; flex-direction:column; gap:18px">
+        <sc-if value="{{ showFavs }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex; flex-direction:column; gap:2px">
+            <div style="font-family:'JetBrains Mono',monospace; font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:#7f8da3; padding:0 10px 6px">Favorites</div>
+            <sc-for list="{{ favItems }}" as="it" hint-placeholder-count="2">
+              <div onClick="{{ it.onSelect }}" style="display:flex; align-items:center; gap:10px; padding:8px 10px; border-radius:8px; background:{{ it.bg }}; cursor:pointer">
+                <span style="width:8px; height:8px; border-radius:50%; background:{{ it.color }}; box-shadow:0 0 8px {{ it.color }}; flex-shrink:0"></span>
+                <span style="flex:1; min-width:0; font-size:14px; color:{{ it.nameColor }}; white-space:nowrap; overflow:hidden; text-overflow:ellipsis">{{ it.name }}</span>
+                <span style="font-family:'JetBrains Mono',monospace; font-size:11px; color:#7f8da3">{{ it.ver }}</span>
+                <span onClick="{{ it.onFav }}" title="Toggle favorite" style="width:20px; text-align:center; color:{{ it.starColor }}; font-size:13px; cursor:pointer">{{ it.star }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+        <sc-if value="{{ showRecent }}">
+          <div style="display:flex; flex-direction:column; gap:2px">
+            <div style="font-family:'JetBrains Mono',monospace; font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:#7f8da3; padding:0 10px 6px">Recent</div>
+            <sc-for list="{{ recentItems }}" as="it" hint-placeholder-count="2">
+              <div onClick="{{ it.onSelect }}" style="display:flex; align-items:center; gap:10px; padding:8px 10px; border-radius:8px; background:{{ it.bg }}; cursor:pointer">
+                <span style="width:8px; height:8px; border-radius:50%; background:{{ it.color }}; box-shadow:0 0 8px {{ it.color }}; flex-shrink:0"></span>
+                <span style="flex:1; min-width:0; font-size:14px; color:{{ it.nameColor }}; white-space:nowrap; overflow:hidden; text-overflow:ellipsis">{{ it.name }}</span>
+                <span style="font-family:'JetBrains Mono',monospace; font-size:11px; color:#7f8da3">{{ it.ver }}</span>
+                <span onClick="{{ it.onFav }}" title="Toggle favorite" style="width:20px; text-align:center; color:{{ it.starColor }}; font-size:13px; cursor:pointer">{{ it.star }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+        <sc-for list="{{ groups }}" as="g" hint-placeholder-count="4">
+          <div style="display:flex; flex-direction:column; gap:2px">
+            <div style="display:flex; justify-content:space-between; font-family:'JetBrains Mono',monospace; font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:#7f8da3; padding:0 10px 6px">
+              <span style="white-space:nowrap">{{ g.name }}</span><span>{{ g.count }}</span>
+            </div>
+            <sc-for list="{{ g.items }}" as="it" hint-placeholder-count="1">
+              <div onClick="{{ it.onSelect }}" style="display:flex; align-items:center; gap:10px; padding:8px 10px; border-radius:8px; background:{{ it.bg }}; cursor:pointer">
+                <span style="width:8px; height:8px; border-radius:50%; background:{{ it.color }}; box-shadow:0 0 8px {{ it.color }}; flex-shrink:0"></span>
+                <span style="flex:1; min-width:0; font-size:14px; color:{{ it.nameColor }}; white-space:nowrap; overflow:hidden; text-overflow:ellipsis">{{ it.name }}</span>
+                <span style="font-family:'JetBrains Mono',monospace; font-size:11px; color:#7f8da3">{{ it.ver }}</span>
+                <span onClick="{{ it.onFav }}" title="Toggle favorite" style="width:20px; text-align:center; color:{{ it.starColor }}; font-size:13px; cursor:pointer">{{ it.star }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </sc-for>
+        <sc-if value="{{ noResults }}">
+          <div style="padding:20px 10px; font-size:13px; color:#7f8da3">No services match “{{ query }}”.</div>
+        </sc-if>
+      </div>
+      <div style="border-top:1px solid rgba(130,190,255,0.10); padding:14px 16px; display:flex; flex-direction:column; gap:8px; font-family:'JetBrains Mono',monospace; font-size:11px; color:#7f8da3">
+        <div>{{ svcCount }} services registered</div>
+        <div style="display:flex; gap:14px">
+          <span style="display:flex; align-items:center; gap:6px"><span style="width:6px; height:6px; border-radius:50%; background:#5fe1ec"></span>{{ nHealthy }} healthy</span>
+          <span style="display:flex; align-items:center; gap:6px"><span style="width:6px; height:6px; border-radius:50%; background:#f2b45a"></span>{{ nDegraded }} degraded</span>
+          <span style="display:flex; align-items:center; gap:6px"><span style="width:6px; height:6px; border-radius:50%; background:#6aa2ff"></span>{{ nDeploying }} deploying</span>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+  <sc-if value="{{ sidebarClosed }}">
+    <div style="width:64px; height:100%; display:flex; flex-direction:column; align-items:center; gap:10px; padding:18px 0">
+      <button onClick="{{ toggleSidebar }}" title="Expand sidebar" style="width:36px; height:36px; border-radius:9px; border:1.5px solid #5fe1ec; background:transparent; color:#5fe1ec; cursor:pointer; font-size:14px; box-shadow:0 0 14px rgba(95,225,236,0.3); margin-bottom:10px">»</button>
+      <sc-for list="{{ railItems }}" as="it" hint-placeholder-count="5">
+        <div onClick="{{ it.onSelect }}" title="{{ it.name }}" style="position:relative; width:40px; height:40px; border-radius:10px; border:1px solid {{ it.ring }}; background:{{ it.bg }}; display:grid; place-items:center; font-family:'JetBrains Mono',monospace; font-size:12px; color:#c9d6e4; cursor:pointer">
+          {{ it.initials }}
+          <span style="position:absolute; top:-3px; right:-3px; width:9px; height:9px; border-radius:50%; background:{{ it.color }}; box-shadow:0 0 8px {{ it.color }}; border:2px solid #0a0f19"></span>
+        </div>
+      </sc-for>
+    </div>
+  </sc-if>
+</aside>
+
+<main style="flex:1; min-width:0; position:relative; overflow:hidden">
+
+  <div ref="{{ setHost }}" style="position:absolute; inset:0; display:{{ disp3d }}; cursor:grab"></div>
+  <div ref="{{ setPins }}" style="position:absolute; inset:0; display:{{ disp3d }}; pointer-events:none; overflow:hidden">
+    <sc-for list="{{ pins }}" as="p" hint-placeholder-count="0">
+      <div data-pin="{{ p.id }}" onClick="{{ p.onClick }}" style="position:absolute; left:0; top:0; opacity:0; pointer-events:auto; cursor:pointer; display:flex; flex-direction:column; align-items:center">
+        <div style="display:flex; align-items:center; gap:7px; padding:5px 10px; border-radius:999px; background:{{ p.bg }}; border:1px solid {{ p.border }}; font-size:12px; white-space:nowrap; backdrop-filter:blur(8px)">
+          <span style="width:7px; height:7px; border-radius:50%; background:{{ p.color }}; box-shadow:0 0 8px {{ p.color }}"></span>{{ p.name }}
+        </div>
+        <div style="width:1px; height:14px; background:{{ p.border }}"></div>
+      </div>
+    </sc-for>
+  </div>
+  <sc-if value="{{ loading3d }}">
+    <div style="position:absolute; inset:0; display:grid; place-items:center; font-family:'JetBrains Mono',monospace; font-size:12px; color:#7f8da3; letter-spacing:.08em; pointer-events:none">LOADING CITY…</div>
+  </sc-if>
+  <sc-if value="{{ err3dShown }}">
+    <div style="position:absolute; inset:0; display:grid; place-items:center; font-size:14px; color:#9aa8bc">WebGL is unavailable here. Switch to Isometric view.</div>
+  </sc-if>
+
+  <div onPointerDown="{{ isoDown }}" onWheel="{{ isoWheel }}" style="position:absolute; inset:0; display:{{ dispIso }}; overflow:hidden; cursor:grab; background:radial-gradient(ellipse at 50% 45%, #0d1828 0%, #070b13 70%)">
+    <div style="position:absolute; left:50%; top:56%; width:0; height:0; transform-style:preserve-3d; transform:{{ isoTransform }}; transition:{{ isoTransition }}">
+      <div style="position:absolute; left:0; top:0; width:800px; height:800px; transform-style:preserve-3d; background:linear-gradient(rgba(95,225,236,0.06) 1px, transparent 1px) 0 0 / 40px 40px, linear-gradient(90deg, rgba(95,225,236,0.06) 1px, transparent 1px) 0 0 / 40px 40px, #08101c">
+        <div style="position:absolute; left:40px; top:40px; width:340px; height:340px; border:1px solid rgba(95,225,236,0.28); background:rgba(20,40,70,0.28); box-sizing:border-box"><div style="position:absolute; left:12px; bottom:10px; font-family:'JetBrains Mono',monospace; font-size:13px; letter-spacing:.12em; color:#7fd6e0">CORE PLATFORM</div></div>
+        <div style="position:absolute; left:420px; top:40px; width:340px; height:340px; border:1px solid rgba(95,225,236,0.28); background:rgba(20,40,70,0.28); box-sizing:border-box"><div style="position:absolute; left:12px; bottom:10px; font-family:'JetBrains Mono',monospace; font-size:13px; letter-spacing:.12em; color:#7fd6e0">COMMERCE</div></div>
+        <div style="position:absolute; left:40px; top:420px; width:340px; height:340px; border:1px solid rgba(95,225,236,0.28); background:rgba(20,40,70,0.28); box-sizing:border-box"><div style="position:absolute; left:12px; bottom:10px; font-family:'JetBrains Mono',monospace; font-size:13px; letter-spacing:.12em; color:#7fd6e0">MESSAGING</div></div>
+        <div style="position:absolute; left:420px; top:420px; width:340px; height:340px; border:1px solid rgba(95,225,236,0.28); background:rgba(20,40,70,0.28); box-sizing:border-box"><div style="position:absolute; left:12px; bottom:10px; font-family:'JetBrains Mono',monospace; font-size:13px; letter-spacing:.12em; color:#7fd6e0">DATA &amp; STORAGE</div></div>
+        <div style="position:absolute; left:398px; top:20px; width:4px; height:760px; background:rgba(95,225,236,0.45); box-shadow:0 0 12px rgba(95,225,236,0.6)"></div>
+        <div style="position:absolute; left:20px; top:398px; width:760px; height:4px; background:rgba(95,225,236,0.45); box-shadow:0 0 12px rgba(95,225,236,0.6)"></div>
+        <sc-if value="{{ hasIsoRing }}">
+          <div style="position:absolute; left:{{ isoRing.left }}; top:{{ isoRing.top }}; width:{{ isoRing.size }}; height:{{ isoRing.size }}; border-radius:50%; border:2px solid #5fe1ec; box-shadow:0 0 24px rgba(95,225,236,0.6), inset 0 0 24px rgba(95,225,236,0.3)"></div>
+        </sc-if>
+        <sc-for list="{{ isoBoxes }}" as="b" hint-placeholder-count="0">
+          <div onClick="{{ b.onClick }}" style="position:absolute; left:{{ b.left }}; top:{{ b.top }}; width:{{ b.w }}; height:{{ b.d }}; transform:{{ b.tz }}; transform-style:preserve-3d; cursor:{{ b.cursor }}">
+            <div style="position:absolute; left:0; top:{{ b.d }}; width:{{ b.w }}; height:{{ b.h }}; transform-origin:0 0; transform:rotateX(90deg); background:{{ b.sideA }}; box-shadow:{{ b.edge }}; border:{{ b.border }}; box-sizing:border-box"></div>
+            <div style="position:absolute; left:0; top:0; width:{{ b.w }}; height:{{ b.h }}; transform-origin:0 0; transform:rotateX(90deg); background:{{ b.sideA }}; box-shadow:{{ b.edge }}; border:{{ b.border }}; box-sizing:border-box"></div>
+            <div style="position:absolute; left:{{ b.w }}; top:0; width:{{ b.h }}; height:{{ b.d }}; transform-origin:0 0; transform:rotateY(-90deg); background:{{ b.sideB }}; box-shadow:{{ b.edge }}; border:{{ b.border }}; box-sizing:border-box"></div>
+            <div style="position:absolute; left:0; top:0; width:{{ b.h }}; height:{{ b.d }}; transform-origin:0 0; transform:rotateY(-90deg); background:{{ b.sideB }}; box-shadow:{{ b.edge }}; border:{{ b.border }}; box-sizing:border-box"></div>
+            <div style="position:absolute; left:0; top:0; width:100%; height:100%; transform:{{ b.topT }}; background:{{ b.top }}; box-shadow:{{ b.topShadow }}; border:{{ b.border }}; box-sizing:border-box"></div>
+          </div>
+        </sc-for>
+        <sc-for list="{{ isoLabels }}" as="l" hint-placeholder-count="0">
+          <div onClick="{{ l.onClick }}" style="position:absolute; left:{{ l.left }}; top:{{ l.top }}; transform-origin:0 0; transform:{{ l.transform }}; transition:{{ l.transition }}; cursor:pointer; display:flex; flex-direction:column; align-items:center">
+            <div style="display:flex; align-items:center; gap:7px; padding:5px 10px; border-radius:999px; background:{{ l.bg }}; border:1px solid {{ l.border }}; font-size:12px; white-space:nowrap">
+              <span style="width:7px; height:7px; border-radius:50%; background:{{ l.color }}; box-shadow:0 0 8px {{ l.color }}"></span>{{ l.name }}
+            </div>
+            <div style="width:1px; height:14px; background:{{ l.border }}"></div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </div>
+
+  <div style="position:absolute; top:16px; left:16px; right:16px; display:flex; align-items:center; gap:10px; z-index:15; pointer-events:none">
+    <div style="pointer-events:auto; display:flex; align-items:center; gap:8px; padding:9px 14px; background:rgba(10,16,28,0.78); border:1px solid rgba(130,190,255,0.14); border-radius:10px; backdrop-filter:blur(12px); font-family:'JetBrains Mono',monospace; font-size:12px">
+      <span onClick="{{ overview }}" style="cursor:pointer; color:{{ crumbCity }}">City</span>
+      <sc-if value="{{ hasSel }}">
+        <span style="color:#3d4b60">/</span><span style="color:#9aa8bc">{{ selDomain }}</span><span style="color:#3d4b60">/</span><span style="color:#e6edf5">{{ selName }}</span>
+      </sc-if>
+    </div>
+    <div style="flex:1"></div>
+    <sc-if value="{{ hasSel }}">
+      <button onClick="{{ overview }}" style="pointer-events:auto; padding:9px 14px; background:rgba(10,16,28,0.78); border:1px solid rgba(130,190,255,0.14); border-radius:10px; color:#cfe0f2; font-size:13px; cursor:pointer; backdrop-filter:blur(12px)" style-hover="border-color:rgba(95,225,236,0.5)">Overview</button>
+    </sc-if>
+    <div style="pointer-events:auto; display:flex; padding:3px; gap:2px; background:rgba(10,16,28,0.78); border:1px solid rgba(130,190,255,0.14); border-radius:10px; backdrop-filter:blur(12px)">
+      <sc-for list="{{ modeBtns }}" as="m" hint-placeholder-count="2">
+        <button onClick="{{ m.onClick }}" style="padding:6px 12px; border:none; border-radius:7px; background:{{ m.bg }}; color:{{ m.color }}; font-family:'JetBrains Mono',monospace; font-size:12px; cursor:pointer">{{ m.label }}</button>
+      </sc-for>
+    </div>
+  </div>
+
+  <sc-if value="{{ showChrome }}" hint-placeholder-val="{{ true }}">
+    <div style="position:absolute; left:16px; bottom:16px; z-index:10; display:flex; flex-direction:column; gap:8px; padding:12px 14px; background:rgba(10,16,28,0.78); border:1px solid rgba(130,190,255,0.14); border-radius:10px; backdrop-filter:blur(12px); font-family:'JetBrains Mono',monospace; font-size:11px; color:#9aa8bc">
+      <div style="display:flex; gap:14px">
+        <span style="display:flex; align-items:center; gap:6px"><span style="width:7px; height:7px; border-radius:50%; background:#5fe1ec; box-shadow:0 0 6px #5fe1ec"></span>Healthy</span>
+        <span style="display:flex; align-items:center; gap:6px"><span style="width:7px; height:7px; border-radius:50%; background:#f2b45a; box-shadow:0 0 6px #f2b45a"></span>Degraded</span>
+        <span style="display:flex; align-items:center; gap:6px"><span style="width:7px; height:7px; border:1px dashed #6aa2ff"></span>Deploying</span>
+      </div>
+      <div style="color:#7f8da3">Height = traffic · Shape = domain</div>
+    </div>
+    <div style="position:absolute; right:16px; bottom:16px; z-index:10; font-family:'JetBrains Mono',monospace; font-size:11px; color:#7f8da3; pointer-events:none">{{ hintText }}</div>
+  </sc-if>
+
+  <sc-if value="{{ showPanel }}">
+    <div style="position:absolute; top:76px; right:20px; width:360px; max-height:calc(100% - 96px); overflow:auto; z-index:20; background:rgba(10,16,28,0.88); border:1px solid rgba(130,190,255,0.16); border-radius:14px; backdrop-filter:blur(16px); box-shadow:0 20px 60px rgba(0,0,0,0.5); padding:20px; display:grid; grid-auto-rows:max-content; gap:18px; box-sizing:border-box">
+      <div style="display:flex; align-items:flex-start; gap:10px">
+        <div style="flex:1; display:flex; flex-direction:column; gap:6px">
+          <div style="font-family:'JetBrains Mono',monospace; font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:#7f8da3">{{ selDomain }}</div>
+          <div style="font-size:26px; font-weight:600; line-height:1.1">{{ selName }}</div>
+          <div style="display:flex; align-items:center; gap:10px; margin-top:2px">
+            <span style="display:inline-flex; align-items:center; gap:6px; padding:3px 9px; border-radius:999px; background:{{ selChipBg }}; border:1px solid {{ selChipBorder }}; color:{{ selColor }}; font-family:'JetBrains Mono',monospace; font-size:11px"><span style="width:6px; height:6px; border-radius:50%; background:{{ selColor }}"></span>{{ selHealth }}</span>
+            <span style="font-family:'JetBrains Mono',monospace; font-size:12px; color:#9aa8bc">{{ selVersion }}</span>
+          </div>
+        </div>
+        <button onClick="{{ overview }}" title="Close" style="width:30px; height:30px; border-radius:8px; border:1px solid rgba(130,190,255,0.16); background:transparent; color:#9aa8bc; cursor:pointer; font-size:15px">×</button>
+      </div>
+      <div style="font-size:14px; line-height:1.55; color:#b4c2d4; text-wrap:pretty">{{ selDesc }}</div>
+      <sc-if value="{{ selIncident }}">
+        <div style="padding:10px 12px; border-radius:9px; background:rgba(242,180,90,0.08); border:1px solid rgba(242,180,90,0.35); font-size:13px; line-height:1.45; color:#f6cf95">{{ selIncident }}</div>
+      </sc-if>
+      <sc-if value="{{ selRollout }}">
+        <div style="display:flex; flex-direction:column; gap:8px">
+          <div style="display:flex; justify-content:space-between; font-family:'JetBrains Mono',monospace; font-size:11px; color:#9aa8bc"><span>ROLLOUT {{ selVer }}</span><span>{{ selRolloutPct }}</span></div>
+          <div style="height:6px; border-radius:6px; background:rgba(106,162,255,0.15); overflow:hidden"><div style="width:{{ selRolloutPct }}; height:100%; background:repeating-linear-gradient(45deg, #6aa2ff 0 6px, #8fbaff 6px 12px)"></div></div>
+          <div style="font-size:12px; color:#7f8da3">{{ selRolloutText }}</div>
+        </div>
+      </sc-if>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:1px; background:rgba(130,190,255,0.10); border:1px solid rgba(130,190,255,0.10); border-radius:10px; overflow:hidden">
+        <sc-for list="{{ selSpecs }}" as="sp" hint-placeholder-count="6">
+          <div style="background:#0b1220; padding:10px 12px; display:flex; flex-direction:column; gap:4px">
+            <div style="font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:#7f8da3">{{ sp.k }}</div>
+            <div style="font-size:14px">{{ sp.v }}</div>
+          </div>
+        </sc-for>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:6px">
+        <div style="font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:#7f8da3">Endpoint</div>
+        <div style="font-family:'JetBrains Mono',monospace; font-size:12.5px; color:#9ff3fa; background:#0b1220; border:1px solid rgba(130,190,255,0.10); border-radius:8px; padding:9px 11px">{{ selEndpoint }}</div>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:8px">
+        <div style="font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:#7f8da3">Capabilities</div>
+        <sc-for list="{{ selFeatures }}" as="f" hint-placeholder-count="4">
+          <div style="display:flex; align-items:center; gap:10px; font-size:13.5px; color:#cfdae6"><span style="width:5px; height:5px; background:#5fe1ec; transform:rotate(45deg); flex-shrink:0"></span>{{ f }}</div>
+        </sc-for>
+      </div>
+      <div style="display:flex; gap:8px">
+        <button onClick="{{ openModal }}" style="flex:1; padding:12px 16px; border:none; border-radius:9px; background:#5fe1ec; color:#04121a; font-weight:600; font-size:14px; cursor:pointer; box-shadow:0 0 24px rgba(95,225,236,0.35)" style-hover="background:#8ff0f7">Use service</button>
+        <button onClick="{{ toggleSelFav }}" title="Toggle favorite" style="width:46px; border-radius:9px; border:1px solid rgba(130,190,255,0.2); background:transparent; color:{{ selStarColor }}; font-size:16px; cursor:pointer">{{ selStar }}</button>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ modal }}">
+    <div style="position:absolute; inset:0; z-index:30; background:rgba(4,7,12,0.55); backdrop-filter:blur(3px); padding:16px; box-sizing:border-box">
+      <div style="width:100%; height:100%; display:flex; flex-direction:column; background:rgba(9,14,24,0.97); border:1px solid {{ selChipBorder }}; border-radius:16px; box-shadow:0 0 0 1px rgba(0,0,0,0.4), 0 30px 80px rgba(0,0,0,0.6), 0 0 60px {{ selGlow }}; overflow:hidden">
+        <div style="display:flex; align-items:center; gap:14px; padding:14px 18px 14px 22px; border-bottom:1px solid rgba(130,190,255,0.10); flex-shrink:0">
+          <span style="width:9px; height:9px; border-radius:50%; background:{{ selColor }}; box-shadow:0 0 10px {{ selColor }}"></span>
+          <div style="font-size:18px; font-weight:600">{{ selName }}</div>
+          <span style="font-family:'JetBrains Mono',monospace; font-size:11.5px; color:#9aa8bc; padding:3px 8px; border:1px solid rgba(130,190,255,0.16); border-radius:6px">{{ selVersion }}</span>
+          <span style="font-family:'JetBrains Mono',monospace; font-size:12px; color:#7f8da3">{{ selEndpoint }}</span>
+          <div style="flex:1"></div>
+          <button onClick="{{ closeModal }}" style="padding:8px 12px; border-radius:8px; border:1px solid rgba(130,190,255,0.18); background:transparent; color:#cfe0f2; font-size:13px; cursor:pointer">Back to building</button>
+          <button onClick="{{ overview }}" title="Close" style="width:34px; height:34px; border-radius:8px; border:1px solid rgba(130,190,255,0.18); background:transparent; color:#9aa8bc; font-size:16px; cursor:pointer">×</button>
+        </div>
+        <div style="flex:1; min-height:0; overflow:auto; padding:22px">
+
+          <sc-if value="{{ isIdentity }}">
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(min(100%, 280px), 1fr)); gap:20px; align-items:start">
+              <div style="display:flex; flex-direction:column; gap:8px; min-width:0">
+                <input value="{{ idQuery }}" onChange="{{ onIdQuery }}" placeholder="Search users" style="background:#0b1220; border:1px solid rgba(130,190,255,0.16); border-radius:8px; padding:9px 11px; color:#e6edf5; font-size:13px; outline:none">
+                <sc-for list="{{ idUsers }}" as="u" hint-placeholder-count="6">
+                  <div onClick="{{ u.onClick }}" style="display:flex; align-items:center; gap:10px; padding:10px; border-radius:10px; background:{{ u.bg }}; border:1px solid {{ u.border }}; cursor:pointer">
+                    <div style="width:32px; height:32px; border-radius:50%; background:#16233a; display:grid; place-items:center; font-size:12px; font-weight:600; color:#9ff3fa; flex-shrink:0">{{ u.initials }}</div>
+                    <div style="flex:1; min-width:0">
+                      <div style="font-size:13.5px">{{ u.name }}</div>
+                      <div style="font-family:'JetBrains Mono',monospace; font-size:11px; color:#7f8da3; overflow:hidden; text-overflow:ellipsis; white-space:nowrap">{{ u.email }}</div>
+                    </div>
+                    <span style="font-family:'JetBrains Mono',monospace; font-size:10.5px; color:#9aa8bc">{{ u.role }}</span>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="display:flex; flex-direction:column; gap:16px; min-width:0">
+                <div style="display:flex; align-items:center; gap:16px; padding:18px; border:1px solid rgba(130,190,255,0.12); border-radius:12px; background:#0b1220">
+                  <div style="width:56px; height:56px; border-radius:50%; background:#16233a; display:grid; place-items:center; font-size:18px; font-weight:600; color:#9ff3fa">{{ idU.initials }}</div>
+                  <div style="flex:1; min-width:0">
+                    <div style="font-size:20px; font-weight:600">{{ idU.name }}</div>
+                    <div style="font-family:'JetBrains Mono',monospace; font-size:12px; color:#9aa8bc">{{ idU.email }}</div>
+                  </div>
+                  <button onClick="{{ revokeSessions }}" style="padding:9px 14px; border-radius:8px; border:1px solid rgba(255,107,107,0.4); background:transparent; color:#ff9a9a; font-size:13px; cursor:pointer">Revoke sessions</button>
+                </div>
+                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(120px,1fr)); gap:10px">
+                  <sc-for list="{{ idFacts }}" as="fa" hint-placeholder-count="4">
+                    <div style="padding:12px; border:1px solid rgba(130,190,255,0.10); border-radius:10px; display:flex; flex-direction:column; gap:4px">
+                      <div style="font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:#7f8da3">{{ fa.k }}</div>
+                      <div style="font-size:14px">{{ fa.v }}</div>
+                    </div>
+                  </sc-for>
+                </div>
+                <div style="padding:18px; border:1px solid rgba(130,190,255,0.12); border-radius:12px; display:flex; flex-direction:column; gap:14px">
+                  <div style="font-size:15px; font-weight:600">Issue access token</div>
+                  <div style="display:flex; flex-direction:column; gap:8px">
+                    <div style="font-family:'JetBrains Mono',monospace; font-size:10.5px; letter-spacing:.08em; text-transform:uppercase; color:#7f8da3">Scopes</div>
+                    <div style="display:flex; flex-wrap:wrap; gap:6px">
+                      <sc-for list="{{ idScopeList }}" as="sc" hint-placeholder-count="5">
+                        <button onClick="{{ sc.onClick }}" style="padding:6px 10px; border-radius:7px; border:1px solid {{ sc.border }}; background:{{ sc.bg }}; color:{{ sc.color }}; font-family:'JetBrains Mono',monospace; font-size:12px; cursor:pointer">{{ sc.name }}</button>
+                      </sc-for>
+                    </div>
+                  </div>
+                  <div style="display:flex; align-items:flex-end; gap:12px; flex-wrap:wrap">
+                    <div style="display:flex; flex-direction:column; gap:8px">
+                      <div style="font-family:'JetBrains Mono',monospace; font-size:10.5px; letter-spacing:.08em; text-transform:uppercase; color:#7f8da3">Expires in</div>
+                      <div style="display:flex; gap:2px; padding:3px; border:1px solid rgba(130,190,255,0.16); border-radius:8px">
+                        <sc-for list="{{ idTtls }}" as="tt" hint-placeholder-count="3">
+                          <button onClick="{{ tt.onClick }}" style="padding:5px 12px; border:none; border-radius:6px; background:{{ tt.bg }}; color:{{ tt.color }}; font-family:'JetBrains Mono',monospace; font-size:12px; cursor:pointer">{{ tt.label }}</button>
+                        </sc-for>
+                      </div>
+                    </div>
+                    <div style="flex:1"></div>
+                    <button onClick="{{ issueToken }}" style="padding:10px 16px; border:none; border-radius:8px; background:#5fe1ec; color:#04121a; font-weight:600; font-size:13px; cursor:pointer">Issue token</button>
+                  </div>
+                  <sc-if value="{{ idToken }}">
+                    <div style="display:flex; flex-direction:column; gap:8px; padding:12px; border-radius:9px; background:#060a12; border:1px solid rgba(95,225,236,0.25)">
+                      <div style="display:flex; justify-content:space-between; font-family:'JetBrains Mono',monospace; font-size:11px; color:#7f8da3"><span>{{ idToken.scopes }}</span><span>expires in {{ idToken.exp }}</span></div>
+                      <div style="font-family:'JetBrains Mono',monospace; font-size:12px; color:#9ff3fa; word-break:break-all; line-height:1.5">{{ idToken.value }}</div>
+                      <div style="display:flex; justify-content:flex-end"><button onClick="{{ copyToken }}" style="padding:6px 10px; border-radius:6px; border:1px solid rgba(130,190,255,0.2); background:transparent; color:#cfe0f2; font-size:12px; cursor:pointer">{{ copyLabel }}</button></div>
+                    </div>
+                  </sc-if>
+                </div>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ isOrders }}">
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap:20px; align-items:start">
+              <div style="display:flex; flex-direction:column; gap:14px; min-width:0">
+                <div style="display:flex; gap:6px; flex-wrap:wrap">
+                  <sc-for list="{{ ordTabs }}" as="t" hint-placeholder-count="6">
+                    <button onClick="{{ t.onClick }}" style="display:flex; align-items:center; gap:7px; padding:7px 12px; border-radius:8px; border:1px solid {{ t.border }}; background:{{ t.bg }}; color:{{ t.color }}; font-size:13px; cursor:pointer">{{ t.label }}<span style="font-family:'JetBrains Mono',monospace; font-size:11px; opacity:.7">{{ t.count }}</span></button>
+                  </sc-for>
+                </div>
+                <div style="border:1px solid rgba(130,190,255,0.12); border-radius:12px; overflow-x:auto">
+                  <div style="min-width:560px; display:grid; grid-template-columns:110px minmax(0,1.4fr) 56px 90px 110px 80px; gap:10px; padding:10px 14px; background:#0b1220; font-family:'JetBrains Mono',monospace; font-size:10.5px; letter-spacing:.08em; text-transform:uppercase; color:#7f8da3">
+                    <span>Order</span><span>Customer</span><span>Items</span><span>Total</span><span>Status</span><span>Created</span>
+                  </div>
+                  <sc-for list="{{ ordRows }}" as="o" hint-placeholder-count="8">
+                    <div onClick="{{ o.onClick }}" style="min-width:560px; display:grid; grid-template-columns:110px minmax(0,1.4fr) 56px 90px 110px 80px; gap:10px; align-items:center; padding:11px 14px; border-top:1px solid rgba(130,190,255,0.08); background:{{ o.bg }}; cursor:pointer; font-size:13.5px" style-hover="background:rgba(130,190,255,0.05)">
+                      <span style="font-family:'JetBrains Mono',monospace; font-size:12px; color:#9ff3fa">{{ o.id }}</span>
+                      <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap">{{ o.customer }}</span>
+                      <span style="color:#9aa8bc">{{ o.items }}</span>
+                      <span style="font-family:'JetBrains Mono',monospace; font-size:12.5px">{{ o.total }}</span>
+                      <span><span style="display:inline-flex; padding:2px 8px; border-radius:999px; font-family:'JetBrains Mono',monospace; font-size:11px; color:{{ o.chipColor }}; background:{{ o.chipBg }}; border:1px solid {{ o.chipBorder }}">{{ o.status }}</span></span>
+                      <span style="font-family:'JetBrains Mono',monospace; font-size:12px; color:#7f8da3">{{ o.time }}</span>
+                    </div>
+                  </sc-for>
+                  <sc-if value="{{ ordEmpty }}"><div style="padding:24px 14px; font-size:13px; color:#7f8da3; border-top:1px solid rgba(130,190,255,0.08)">No orders with this status.</div></sc-if>
+                </div>
+              </div>
+              <div style="display:flex; flex-direction:column; gap:16px; padding:18px; border:1px solid rgba(130,190,255,0.12); border-radius:12px; background:#0b1220; align-self:start">
+                <div style="display:flex; justify-content:space-between; align-items:center">
+                  <span style="font-family:'JetBrains Mono',monospace; font-size:13px; color:#9ff3fa">{{ ordD.id }}</span>
+                  <span style="display:inline-flex; padding:2px 8px; border-radius:999px; font-family:'JetBrains Mono',monospace; font-size:11px; color:{{ ordD.chipColor }}; background:{{ ordD.chipBg }}; border:1px solid {{ ordD.chipBorder }}">{{ ordD.status }}</span>
+                </div>
+                <div style="font-size:18px; font-weight:600">{{ ordD.customer }}</div>
+                <div style="display:flex; flex-direction:column; gap:8px">
+                  <sc-for list="{{ ordD.lines }}" as="ln" hint-placeholder-count="2">
+                    <div style="display:flex; gap:10px; font-size:13.5px"><span style="flex:1">{{ ln.name }}</span><span style="color:#7f8da3">{{ ln.qty }}</span><span style="font-family:'JetBrains Mono',monospace; font-size:12.5px; width:72px; text-align:right">{{ ln.price }}</span></div>
+                  </sc-for>
+                  <div style="display:flex; justify-content:space-between; border-top:1px solid rgba(130,190,255,0.10); padding-top:10px; font-weight:600"><span>Total</span><span style="font-family:'JetBrains Mono',monospace">{{ ordD.total }}</span></div>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:0">
+                  <sc-for list="{{ ordD.steps }}" as="stp" hint-placeholder-count="4">
+                    <div style="display:flex; align-items:center; gap:10px; padding:6px 0">
+                      <span style="width:10px; height:10px; border-radius:50%; border:2px solid {{ stp.color }}; background:{{ stp.fill }}"></span>
+                      <span style="font-size:13.5px; color:{{ stp.text }}">{{ stp.label }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+                <div style="display:flex; gap:8px">
+                  <sc-if value="{{ ordD.canAdvance }}"><button onClick="{{ ordD.onAdvance }}" style="flex:1; padding:10px 12px; border:none; border-radius:8px; background:#5fe1ec; color:#04121a; font-weight:600; font-size:13px; cursor:pointer">{{ ordD.nextLabel }}</button></sc-if>
+                  <sc-if value="{{ ordD.canCancel }}"><button onClick="{{ ordD.onCancel }}" style="padding:10px 12px; border-radius:8px; border:1px solid rgba(255,107,107,0.4); background:transparent; color:#ff9a9a; font-size:13px; cursor:pointer">Cancel</button></sc-if>
+                </div>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ isPayments }}">
+            <div style="display:flex; flex-direction:column; gap:18px">
+              <div style="display:flex; align-items:center; gap:10px; padding:11px 14px; border-radius:10px; background:rgba(242,180,90,0.08); border:1px solid rgba(242,180,90,0.35); font-size:13.5px; color:#f6cf95">
+                <span style="width:8px; height:8px; border-radius:50%; background:#f2b45a; box-shadow:0 0 8px #f2b45a"></span>{{ payIncident }}
+              </div>
+              <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(320px,1fr)); gap:20px">
+                <div style="display:flex; flex-direction:column; gap:16px; padding:18px; border:1px solid rgba(130,190,255,0.12); border-radius:12px; background:#0b1220; align-self:start">
+                  <div style="font-size:15px; font-weight:600">Create a test charge</div>
+                  <div style="display:flex; gap:10px; align-items:flex-end">
+                    <label style="flex:1; display:flex; flex-direction:column; gap:6px">
+                      <span style="font-family:'JetBrains Mono',monospace; font-size:10.5px; letter-spacing:.08em; text-transform:uppercase; color:#7f8da3">Amount</span>
+                      <input value="{{ payAmount }}" onChange="{{ onPayAmount }}" inputmode="decimal" style="background:#070c16; border:1px solid rgba(130,190,255,0.16); border-radius:8px; padding:9px 11px; color:#e6edf5; font-family:'JetBrains Mono',monospace; font-size:15px; outline:none; min-width:0">
+                    </label>
+                    <div style="display:flex; gap:2px; padding:3px; border:1px solid rgba(130,190,255,0.16); border-radius:8px">
+                      <sc-for list="{{ payCurs }}" as="c" hint-placeholder-count="3">
+                        <button onClick="{{ c.onClick }}" style="padding:6px 10px; border:none; border-radius:6px; background:{{ c.bg }}; color:{{ c.color }}; font-family:'JetBrains Mono',monospace; font-size:12px; cursor:pointer">{{ c.label }}</button>
+                      </sc-for>
+                    </div>
+                  </div>
+                  <div style="display:flex; flex-direction:column; gap:6px">
+                    <span style="font-family:'JetBrains Mono',monospace; font-size:10.5px; letter-spacing:.08em; text-transform:uppercase; color:#7f8da3">Test card</span>
+                    <sc-for list="{{ payCards }}" as="cd" hint-placeholder-count="3">
+                      <div onClick="{{ cd.onClick }}" style="display:flex; align-items:center; gap:12px; padding:10px 12px; border-radius:9px; border:1px solid {{ cd.border }}; background:{{ cd.bg }}; cursor:pointer">
+                        <span style="font-family:'JetBrains Mono',monospace; font-size:13px">•••• {{ cd.last4 }}</span>
+                        <span style="font-size:13px; color:#9aa8bc">{{ cd.brand }}</span>
+                        <span style="flex:1"></span>
+                        <span style="font-size:12px; color:{{ cd.noteColor }}">{{ cd.note }}</span>
+                      </div>
+                    </sc-for>
+                  </div>
+                  <label style="display:flex; flex-direction:column; gap:6px">
+                    <span style="font-family:'JetBrains Mono',monospace; font-size:10.5px; letter-spacing:.08em; text-transform:uppercase; color:#7f8da3">Description</span>
+                    <input value="{{ payDesc }}" onChange="{{ onPayDesc }}" style="background:#070c16; border:1px solid rgba(130,190,255,0.16); border-radius:8px; padding:9px 11px; color:#e6edf5; font-size:13px; outline:none">
+                  </label>
+                  <button onClick="{{ createCharge }}" style="padding:11px 16px; border:none; border-radius:8px; background:#5fe1ec; color:#04121a; font-weight:600; font-size:14px; cursor:pointer; opacity:{{ payBtnOpacity }}">{{ payBtnLabel }}</button>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:16px; min-width:0">
+                  <div style="border:1px solid rgba(130,190,255,0.12); border-radius:12px; overflow:hidden">
+                    <div style="display:flex; justify-content:space-between; padding:10px 14px; background:#0b1220; font-family:'JetBrains Mono',monospace; font-size:11px; color:#7f8da3"><span>RESPONSE</span><span>{{ payRespMeta }}</span></div>
+                    <sc-if value="{{ payResp }}"><pre style="margin:0; padding:14px; font-family:'JetBrains Mono',monospace; font-size:12.5px; line-height:1.6; color:#cfe0f2; white-space:pre-wrap; background:#060a12">{{ payResp }}</pre></sc-if>
+                    <sc-if value="{{ noPayResp }}"><div style="padding:22px 14px; font-size:13px; color:#7f8da3; background:#060a12">Create a charge to see the API response.</div></sc-if>
+                  </div>
+                  <div style="border:1px solid rgba(130,190,255,0.12); border-radius:12px; overflow:hidden">
+                    <div style="padding:10px 14px; background:#0b1220; font-family:'JetBrains Mono',monospace; font-size:11px; color:#7f8da3">RECENT CHARGES</div>
+                    <sc-for list="{{ payLog }}" as="pl" hint-placeholder-count="2">
+                      <div style="display:flex; flex-wrap:wrap; gap:6px 14px; align-items:center; padding:10px 14px; border-top:1px solid rgba(130,190,255,0.08); font-size:13px">
+                        <span style="flex:1 1 120px; font-family:'JetBrains Mono',monospace; font-size:12px; color:#9ff3fa">{{ pl.id }}</span>
+                        <span style="font-family:'JetBrains Mono',monospace; font-size:12.5px">{{ pl.amount }}</span>
+                        <span><span style="display:inline-flex; padding:2px 8px; border-radius:999px; font-family:'JetBrains Mono',monospace; font-size:11px; color:{{ pl.chipColor }}; background:{{ pl.chipBg }}; border:1px solid {{ pl.chipBorder }}">{{ pl.status }}</span></span>
+                        <span style="font-family:'JetBrains Mono',monospace; font-size:12px; color:{{ pl.msColor }}">{{ pl.ms }}</span>
+                        <span style="font-family:'JetBrains Mono',monospace; font-size:12px; color:#7f8da3">{{ pl.time }}</span>
+                      </div>
+                    </sc-for>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ isNotify }}">
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(min(100%, 320px), 1fr)); gap:20px; align-items:start">
+              <div style="display:flex; flex-direction:column; gap:16px; min-width:0">
+                <div style="display:flex; flex-direction:column; gap:14px; padding:18px; border:1px solid rgba(130,190,255,0.12); border-radius:12px; background:#0b1220">
+                  <div style="display:flex; align-items:center; gap:12px">
+                    <div style="font-size:15px; font-weight:600; flex:1">Compose</div>
+                    <div style="display:flex; gap:2px; padding:3px; border:1px solid rgba(130,190,255,0.16); border-radius:8px">
+                      <sc-for list="{{ ntTabs }}" as="t" hint-placeholder-count="3">
+                        <button onClick="{{ t.onClick }}" style="padding:6px 12px; border:none; border-radius:6px; background:{{ t.bg }}; color:{{ t.color }}; font-size:13px; cursor:pointer">{{ t.label }}</button>
+                      </sc-for>
+                    </div>
+                  </div>
+                  <label style="display:flex; flex-direction:column; gap:6px">
+                    <span style="font-family:'JetBrains Mono',monospace; font-size:10.5px; letter-spacing:.08em; text-transform:uppercase; color:#7f8da3">Audience</span>
+                    <select value="{{ ntAudience }}" onChange="{{ onNtAudience }}" style="background:#070c16; border:1px solid rgba(130,190,255,0.16); border-radius:8px; padding:9px 11px; color:#e6edf5; font-size:13px; outline:none">
+                      <option value="All users">All users · 12,480</option>
+                      <option value="Customers with open orders">Customers with open orders · 316</option>
+                      <option value="Admins">Admins · 9</option>
+                    </select>
+                  </label>
+                  <sc-if value="{{ ntHasSubject }}">
+                    <label style="display:flex; flex-direction:column; gap:6px">
+                      <span style="font-family:'JetBrains Mono',monospace; font-size:10.5px; letter-spacing:.08em; text-transform:uppercase; color:#7f8da3">{{ ntSubjectLabel }}</span>
+                      <input value="{{ ntSubject }}" onChange="{{ onNtSubject }}" style="background:#070c16; border:1px solid rgba(130,190,255,0.16); border-radius:8px; padding:9px 11px; color:#e6edf5; font-size:13px; outline:none">
+                    </label>
+                  </sc-if>
+                  <label style="display:flex; flex-direction:column; gap:6px">
+                    <span style="display:flex; justify-content:space-between; font-family:'JetBrains Mono',monospace; font-size:10.5px; letter-spacing:.08em; text-transform:uppercase; color:#7f8da3"><span>Message</span><span style="color:{{ ntCountColor }}">{{ ntCount }}</span></span>
+                    <textarea value="{{ ntBody }}" onChange="{{ onNtBody }}" rows="4" style="background:#070c16; border:1px solid rgba(130,190,255,0.16); border-radius:8px; padding:9px 11px; color:#e6edf5; font-size:13px; line-height:1.5; outline:none; resize:vertical"></textarea>
+                  </label>
+                  <div style="display:flex; justify-content:flex-end"><button onClick="{{ ntSend }}" style="padding:10px 18px; border:none; border-radius:8px; background:#5fe1ec; color:#04121a; font-weight:600; font-size:13px; cursor:pointer">{{ ntSendLabel }}</button></div>
+                </div>
+                <div style="border:1px solid rgba(130,190,255,0.12); border-radius:12px; overflow:hidden">
+                  <div style="padding:10px 14px; background:#0b1220; font-family:'JetBrains Mono',monospace; font-size:11px; color:#7f8da3">DELIVERY LOG</div>
+                  <sc-for list="{{ ntLog }}" as="nl" hint-placeholder-count="2">
+                    <div style="display:flex; flex-wrap:wrap; gap:6px 14px; align-items:center; padding:10px 14px; border-top:1px solid rgba(130,190,255,0.08); font-size:13px">
+                      <span style="font-family:'JetBrains Mono',monospace; font-size:12px; color:#9ff3fa">{{ nl.channel }}</span>
+                      <span style="flex:1 1 160px; min-width:0; color:#cfdae6">{{ nl.audience }}</span>
+                      <span style="font-family:'JetBrains Mono',monospace; font-size:12px">{{ nl.count }}</span>
+                      <span style="font-family:'JetBrains Mono',monospace; font-size:12px; color:{{ nl.color }}">{{ nl.status }}</span>
+                      <span style="font-family:'JetBrains Mono',monospace; font-size:12px; color:#7f8da3">{{ nl.time }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+              <div style="display:flex; flex-direction:column; gap:10px; padding:18px; border:1px solid rgba(130,190,255,0.12); border-radius:12px; background:repeating-linear-gradient(45deg, rgba(255,255,255,0.015) 0 8px, transparent 8px 16px), #080d17; align-self:start">
+                <div style="font-family:'JetBrains Mono',monospace; font-size:10.5px; letter-spacing:.08em; text-transform:uppercase; color:#7f8da3">Preview · {{ ntChannel }}</div>
+                <sc-if value="{{ ntIsEmail }}">
+                  <div style="background:#f3f5f8; color:#1a2230; border-radius:10px; overflow:hidden">
+                    <div style="padding:12px 14px; border-bottom:1px solid #dde2ea; font-size:12px; color:#56627a">From Acme &lt;no-reply@acme.io&gt;</div>
+                    <div style="padding:14px; display:flex; flex-direction:column; gap:8px">
+                      <div style="font-size:16px; font-weight:600">{{ ntPrevSubject }}</div>
+                      <div style="font-size:13.5px; line-height:1.55; color:#38445a">{{ ntPrevBody }}</div>
+                    </div>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ ntIsSms }}">
+                  <div style="display:flex; flex-direction:column; gap:6px; padding:16px; background:#0d1220; border-radius:14px">
+                    <div style="font-size:11px; color:#7f8da3; text-align:center">Text message · now</div>
+                    <div style="align-self:flex-start; max-width:85%; background:#1f2a3d; color:#e6edf5; padding:10px 13px; border-radius:16px 16px 16px 4px; font-size:13.5px; line-height:1.45">{{ ntPrevBody }}</div>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ ntIsPush }}">
+                  <div style="display:flex; gap:12px; padding:12px 14px; background:rgba(230,237,245,0.10); border:1px solid rgba(230,237,245,0.12); border-radius:16px">
+                    <div style="width:36px; height:36px; border-radius:9px; background:#5fe1ec; flex-shrink:0; display:grid; place-items:center; color:#04121a; font-weight:600; font-size:13px">A</div>
+                    <div style="flex:1; min-width:0; display:flex; flex-direction:column; gap:3px">
+                      <div style="display:flex; justify-content:space-between; font-size:11px; color:#9aa8bc"><span>ACME</span><span>now</span></div>
+                      <div style="font-size:14px; font-weight:600">{{ ntPrevSubject }}</div>
+                      <div style="font-size:13px; color:#cfdae6; line-height:1.4">{{ ntPrevBody }}</div>
+                    </div>
+                  </div>
+                </sc-if>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ isMedia }}">
+            <div style="display:flex; flex-direction:column; gap:18px">
+              <div style="display:flex; align-items:center; gap:12px; padding:11px 14px; border-radius:10px; background:rgba(106,162,255,0.08); border:1px dashed rgba(106,162,255,0.5); font-size:13.5px; color:#b9d1ff">
+                <span style="font-family:'JetBrains Mono',monospace; font-size:11px; color:#6aa2ff">DEPLOYING</span>Rolling out v2.4.0, 3 of 5 instances updated. Uploads are served by v2.3.1 until the rollout completes.
+              </div>
+              <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap:20px; align-items:start">
+                <div style="display:flex; flex-direction:column; gap:4px">
+                  <div style="font-family:'JetBrains Mono',monospace; font-size:10.5px; letter-spacing:.08em; text-transform:uppercase; color:#7f8da3; padding:0 10px 6px">Buckets</div>
+                  <sc-for list="{{ mdBuckets }}" as="bk" hint-placeholder-count="3">
+                    <div onClick="{{ bk.onClick }}" style="display:flex; justify-content:space-between; align-items:center; padding:9px 10px; border-radius:8px; background:{{ bk.bg }}; color:{{ bk.color }}; cursor:pointer; font-size:13.5px">
+                      <span style="font-family:'JetBrains Mono',monospace">{{ bk.name }}</span><span style="font-family:'JetBrains Mono',monospace; font-size:11px; color:#7f8da3">{{ bk.count }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:14px; min-width:0">
+                  <div style="display:flex; align-items:center; gap:12px">
+                    <div style="font-family:'JetBrains Mono',monospace; font-size:14px; flex:1">{{ mdBucket }}/</div>
+                    <button onClick="{{ mdUploadFn }}" style="padding:9px 14px; border:none; border-radius:8px; background:#5fe1ec; color:#04121a; font-weight:600; font-size:13px; cursor:pointer">Upload file</button>
+                  </div>
+                  <sc-if value="{{ mdUploading }}">
+                    <div style="display:flex; flex-direction:column; gap:6px; padding:12px; border:1px solid rgba(130,190,255,0.12); border-radius:10px">
+                      <div style="display:flex; justify-content:space-between; font-family:'JetBrains Mono',monospace; font-size:12px; color:#9aa8bc"><span>{{ mdUpName }}</span><span>{{ mdUpPct }}</span></div>
+                      <div style="height:5px; border-radius:5px; background:rgba(95,225,236,0.12); overflow:hidden"><div style="width:{{ mdUpPct }}; height:100%; background:#5fe1ec; transition:width .12s linear"></div></div>
+                    </div>
+                  </sc-if>
+                  <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(150px, 1fr)); gap:12px">
+                    <sc-for list="{{ mdFiles }}" as="fl" hint-placeholder-count="6">
+                      <div onClick="{{ fl.onClick }}" style="display:flex; flex-direction:column; border-radius:10px; border:1px solid {{ fl.border }}; overflow:hidden; cursor:pointer; background:#0b1220">
+                        <div style="height:96px; display:grid; place-items:center; background:repeating-linear-gradient(45deg, rgba(130,190,255,0.06) 0 6px, transparent 6px 12px), #0a111d; font-family:'JetBrains Mono',monospace; font-size:11px; color:#7f8da3">{{ fl.t }}</div>
+                        <div style="padding:9px 10px; display:flex; flex-direction:column; gap:3px">
+                          <div style="font-size:12.5px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap">{{ fl.n }}</div>
+                          <div style="font-family:'JetBrains Mono',monospace; font-size:11px; color:#7f8da3">{{ fl.s }}</div>
+                        </div>
+                      </div>
+                    </sc-for>
+                  </div>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:14px; padding:16px; border:1px solid rgba(130,190,255,0.12); border-radius:12px; background:#0b1220; align-self:start">
+                  <sc-if value="{{ mdHasSel }}">
+                    <div style="height:130px; border-radius:8px; display:grid; place-items:center; background:repeating-linear-gradient(45deg, rgba(130,190,255,0.06) 0 6px, transparent 6px 12px), #0a111d; font-family:'JetBrains Mono',monospace; font-size:11px; color:#7f8da3">{{ mdD.t }} preview</div>
+                    <div style="font-size:15px; font-weight:600; word-break:break-all">{{ mdD.n }}</div>
+                    <div style="display:grid; grid-template-columns:auto 1fr; gap:6px 14px; font-size:13px">
+                      <span style="color:#7f8da3">Size</span><span style="font-family:'JetBrains Mono',monospace; font-size:12.5px">{{ mdD.s }}</span>
+                      <span style="color:#7f8da3">Type</span><span style="font-family:'JetBrains Mono',monospace; font-size:12.5px">{{ mdD.t }}</span>
+                      <span style="color:#7f8da3">Modified</span><span style="font-family:'JetBrains Mono',monospace; font-size:12.5px">{{ mdD.d }}</span>
+                    </div>
+                    <button onClick="{{ mdSign }}" style="padding:9px 12px; border-radius:8px; border:1px solid rgba(95,225,236,0.45); background:transparent; color:#9ff3fa; font-size:13px; cursor:pointer">Generate signed URL</button>
+                    <sc-if value="{{ mdUrl }}">
+                      <div style="font-family:'JetBrains Mono',monospace; font-size:11.5px; line-height:1.5; color:#9ff3fa; word-break:break-all; padding:10px; border-radius:8px; background:#060a12; border:1px solid rgba(95,225,236,0.2)">{{ mdUrl }}</div>
+                    </sc-if>
+                  </sc-if>
+                  <sc-if value="{{ mdNoSel }}"><div style="font-size:13px; color:#7f8da3">Select a file to see its details.</div></sc-if>
+                </div>
+              </div>
+            </div>
+          </sc-if>
+
+        </div>
+      </div>
+    </div>
+  </sc-if>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;defaultMode&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;3D&quot;,&quot;Isometric&quot;],&quot;default&quot;:&quot;3D&quot;,&quot;tsType&quot;:&quot;'3D' | 'Isometric'&quot;},&quot;autoRotate&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;},&quot;showTraffic&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;}}">
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.svcs = [
+      { id: 'identity', name: 'Identity', domain: 'Core Platform', kind: 'tower', health: 'healthy', ver: 'v3.8.2', version: 'v3.8.2', rps: 2400, p99: '38 ms', uptime: '99.99%', instances: 12, endpoint: 'https://api.acme.io/identity/v3', owner: 'Platform team', region: 'ap-east-1, eu-west-1',
+        desc: 'Central authentication and authorization. Issues OAuth 2.0 and OIDC tokens and manages users, roles and MFA for every service in the city.',
+        features: ['OAuth 2.0 and OpenID Connect', 'Role-based access control', 'TOTP and WebAuthn MFA', 'Service-to-service tokens'], x: 150, y: 150, w: 80, d: 80 },
+      { id: 'orders', name: 'Orders', domain: 'Commerce', kind: 'block', health: 'healthy', ver: 'v5.2.0', version: 'v5.2.0', rps: 1800, p99: '64 ms', uptime: '99.95%', instances: 8, endpoint: 'https://api.acme.io/orders/v5', owner: 'Commerce team', region: 'ap-east-1',
+        desc: 'Order lifecycle from checkout to delivery. Tracks state transitions and emits events consumed by payments, inventory and notifications.',
+        features: ['Order state machine', 'Idempotent checkout API', 'Event stream: order.*', 'Bulk export to CSV'], x: 470, y: 100, w: 90, d: 70 },
+      { id: 'payments', name: 'Payments', domain: 'Commerce', kind: 'block', health: 'degraded', ver: 'v2.11.4', version: 'v2.11.4', rps: 1200, p99: '412 ms', uptime: '99.71%', instances: 6, endpoint: 'https://api.acme.io/payments/v2', owner: 'Payments team', region: 'ap-east-1, eu-west-1',
+        desc: 'Card and wallet payment processing with fraud screening. Wraps three acquirers behind a single charge API.',
+        incident: 'Elevated latency on acquirer EU-2 since 09:42 UTC. Charges succeed but p99 is above 400 ms.',
+        features: ['Charges, refunds and captures', '3-D Secure 2', 'Fraud scoring', 'Multi-acquirer routing'], x: 620, y: 230, w: 80, d: 80 },
+      { id: 'notify', name: 'Notifications', domain: 'Messaging', kind: 'cylinder', health: 'healthy', ver: 'v1.19.0', version: 'v1.19.0', rps: 900, p99: '120 ms', uptime: '99.98%', instances: 4, endpoint: 'https://api.acme.io/notify/v1', owner: 'Messaging team', region: 'ap-east-1',
+        desc: 'One API for email, SMS and push. Handles templates, user preferences, rate limits and delivery receipts.',
+        features: ['Email, SMS and push', 'Template rendering', 'Quiet hours and opt-out', 'Delivery receipts'], x: 170, y: 540, w: 80, d: 80 },
+      { id: 'media', name: 'Media Storage', domain: 'Data & Storage', kind: 'stepped', health: 'deploying', ver: 'v2.4.0', version: 'v2.3.1 → v2.4.0', rps: 600, p99: '85 ms', uptime: '99.90%', instances: 5, endpoint: 'https://api.acme.io/media/v2', owner: 'Storage team', region: 'ap-east-1',
+        desc: 'Object storage for images, video and documents. Generates thumbnails and signed URLs, backed by a CDN edge.',
+        rollout: 60, rolloutText: '3 of 5 instances on v2.4.0. Canary error rate 0.02%.',
+        features: ['Signed upload and download URLs', 'Image transforms', 'Lifecycle rules', 'CDN edge caching'], x: 540, y: 540, w: 100, d: 90 }
+    ];
+    this.svcs.forEach(s => { s.hIso = (10 + s.rps / 100) * 7; });
+    this.districts = [
+      { name: 'Core Platform', x0: 40, y0: 40, x1: 380, y1: 380 },
+      { name: 'Commerce', x0: 420, y0: 40, x1: 760, y1: 380 },
+      { name: 'Messaging', x0: 40, y0: 420, x1: 380, y1: 760 },
+      { name: 'Data & Storage', x0: 420, y0: 420, x1: 760, y1: 760 }
+    ];
+    this.seed = 11;
+    this.fillers = this.makeFillers();
+    let saved = {};
+    try { saved = JSON.parse(localStorage.getItem('gridline.state') || '{}'); } catch (e) {}
+    const p = props || {};
+    this.state = {
+      mode: saved.mode || (p.defaultMode === 'Isometric' ? 'iso' : '3d'),
+      sidebarOpen: true, query: '', favs: saved.favs || ['identity', 'orders'], recent: saved.recent || [],
+      selected: null, modal: false, rot: 45, zoom: 1, isoDrag: false, ready3d: false, err3d: false,
+      users: [
+        { id: 'u1', name: 'Mei-Ling Chen', email: 'mei.chen@acme.io', role: 'Admin', mfa: 'WebAuthn', last: '2 min ago', sessions: 3 },
+        { id: 'u2', name: 'Daniel Okafor', email: 'd.okafor@acme.io', role: 'Developer', mfa: 'TOTP', last: '1 h ago', sessions: 2 },
+        { id: 'u3', name: 'Sofia Marchetti', email: 'sofia.m@acme.io', role: 'Support', mfa: 'TOTP', last: 'Yesterday', sessions: 1 },
+        { id: 'u4', name: 'Kenji Watanabe', email: 'kenji@acme.io', role: 'Developer', mfa: 'None', last: '3 days ago', sessions: 1 },
+        { id: 'u5', name: 'Priya Raman', email: 'priya.r@acme.io', role: 'Billing', mfa: 'WebAuthn', last: '5 h ago', sessions: 2 },
+        { id: 'u6', name: 'Lucas Ferreira', email: 'lucas.f@acme.io', role: 'Viewer', mfa: 'None', last: '2 weeks ago', sessions: 0 }
+      ],
+      idSel: 'u1', idQuery: '', idScopes: ['read:profile'], idTtl: '1h', idToken: null, copied: false,
+      orders: [
+        { id: 'ORD-10482', customer: 'Mei-Ling Chen', items: [['Aurora desk lamp', 1, 89], ['USB-C cable 2 m', 2, 12]], status: 'Paid', time: '10:42' },
+        { id: 'ORD-10481', customer: 'Daniel Okafor', items: [['Mechanical keyboard', 1, 149]], status: 'Shipped', time: '10:18' },
+        { id: 'ORD-10480', customer: 'Sofia Marchetti', items: [['Noise-cancelling headphones', 1, 229]], status: 'Pending', time: '09:57' },
+        { id: 'ORD-10479', customer: 'Kenji Watanabe', items: [['Monitor arm', 1, 64], ['Desk mat', 1, 24]], status: 'Delivered', time: '09:31' },
+        { id: 'ORD-10478', customer: 'Priya Raman', items: [['Laptop stand', 1, 49]], status: 'Cancelled', time: '08:50' },
+        { id: 'ORD-10477', customer: 'Lucas Ferreira', items: [['4K webcam', 1, 119]], status: 'Pending', time: '08:12' },
+        { id: 'ORD-10476', customer: 'Ana Souza', items: [['Ergonomic chair', 1, 399]], status: 'Shipped', time: 'Nov 4' },
+        { id: 'ORD-10475', customer: 'Tom Becker', items: [['Wireless mouse', 2, 39]], status: 'Delivered', time: 'Nov 4' }
+      ],
+      ordFilter: 'All', ordSel: 'ORD-10482',
+      payAmount: '49.00', payCur: 'USD', payCard: '4242', payDesc: 'Order ORD-10482', payBusy: false, payResp: null, payRespMeta: '',
+      payLog: [
+        { id: 'ch_3PqK8xT2', amount: '$129.00', status: 'succeeded', ms: 512, time: '10:41' },
+        { id: 'ch_3PqK2bL9', amount: '€42.50', status: 'declined', ms: 604, time: '10:37' }
+      ],
+      ntChannel: 'Email', ntAudience: 'Customers with open orders', ntSubject: 'Your order is on its way', ntBody: 'Good news: your order has shipped and should arrive within 2 to 3 business days.', ntBusy: false,
+      ntLog: [
+        { key: 'a', channel: 'Push', audience: 'Customers with open orders', count: '316', status: 'Delivered 99.1%', time: '09:58' },
+        { key: 'b', channel: 'Email', audience: 'All users', count: '12,480', status: 'Delivered 97.4%', time: 'Nov 4' }
+      ],
+      mdBucket: 'assets', mdSel: 'hero-banner.webp', mdUrl: null, mdUpload: null,
+      mdFiles: {
+        assets: [
+          { n: 'hero-banner.webp', t: 'IMG', s: '412 KB', d: 'Nov 4' }, { n: 'product-lamp.png', t: 'IMG', s: '1.2 MB', d: 'Nov 3' },
+          { n: 'promo-autumn.mp4', t: 'MP4', s: '18.4 MB', d: 'Nov 1' }, { n: 'brand-guide.pdf', t: 'PDF', s: '3.1 MB', d: 'Oct 28' },
+          { n: 'icon-sprite.svg', t: 'SVG', s: '24 KB', d: 'Oct 22' }, { n: 'lookbook-01.jpg', t: 'IMG', s: '2.4 MB', d: 'Oct 19' }
+        ],
+        avatars: [
+          { n: 'u-1042.jpg', t: 'IMG', s: '88 KB', d: 'Nov 5' }, { n: 'u-1043.jpg', t: 'IMG', s: '92 KB', d: 'Nov 5' },
+          { n: 'u-1051.png', t: 'IMG', s: '140 KB', d: 'Nov 2' }, { n: 'u-1077.jpg', t: 'IMG', s: '76 KB', d: 'Oct 30' }
+        ],
+        exports: [
+          { n: 'orders-2026-10.csv', t: 'CSV', s: '640 KB', d: 'Nov 1' }, { n: 'ledger-q3.pdf', t: 'PDF', s: '1.8 MB', d: 'Oct 3' },
+          { n: 'users-snapshot.json', t: 'JSON', s: '4.2 MB', d: 'Sep 30' }
+        ]
+      }
+    };
+  }
+
+  rng() { let t = this.seed += 0x6D2B79F5; t = Math.imul(t ^ t >>> 15, t | 1); t ^= t + Math.imul(t ^ t >>> 7, t | 61); return ((t ^ t >>> 14) >>> 0) / 4294967296; }
+  makeFillers() {
+    const out = [];
+    this.districts.forEach(D => {
+      for (let y = D.y0 + 14; y < D.y1 - 44; y += 62) for (let x = D.x0 + 14; x < D.x1 - 44; x += 62) {
+        if (this.rng() < 0.3) continue;
+        const w = 22 + this.rng() * 20, d = 22 + this.rng() * 20;
+        const fx = x + this.rng() * (56 - w), fy = y + this.rng() * (56 - d);
+        const h = 16 + Math.pow(this.rng(), 1.6) * 100;
+        if (this.svcs.some(s => fx < s.x + s.w + 18 && fx + w > s.x - 18 && fy < s.y + s.d + 18 && fy + d > s.y - 18)) continue;
+        if (D.name === 'Data & Storage' && fx > 640 && fy < 560) continue;
+        out.push({ x: fx, y: fy, w, d, h });
+      }
+    });
+    return out;
+  }
+  segs(s) {
+    const H = s.hIso, w = s.w, d = s.d;
+    if (s.kind === 'tower') return [{ x: 0, y: 0, w, d, z: 0, h: H * 0.68 }, { x: w * 0.18, y: d * 0.18, w: w * 0.64, d: d * 0.64, z: H * 0.68, h: H * 0.32, top: true }];
+    if (s.kind === 'block') return [{ x: 0, y: 0, w, d, z: 0, h: H * 0.22 }, { x: w * 0.12, y: d * 0.15, w: w * 0.6, d: d * 0.7, z: H * 0.22, h: H * 0.78, top: true }];
+    if (s.kind === 'cylinder') return [{ x: w * 0.1, y: d * 0.1, w: w * 0.8, d: d * 0.8, z: 0, h: H * 0.9, cyl: true }, { x: w * 0.3, y: d * 0.3, w: w * 0.4, d: d * 0.4, z: H * 0.9, h: H * 0.1, top: true }];
+    return [{ x: 0, y: 0, w, d, z: 0, h: H * 0.45 }, { x: w * 0.12, y: d * 0.12, w: w * 0.76, d: d * 0.76, z: H * 0.45, h: H * 0.3, top: s.health !== 'deploying' }, { x: w * 0.25, y: d * 0.25, w: w * 0.5, d: d * 0.5, z: H * 0.75, h: H * 0.25, top: true, build: s.health === 'deploying' }];
+  }
+  svc(id) { return this.svcs.find(s => s.id === id); }
+  hc(h) { return { healthy: '#5fe1ec', degraded: '#f2b45a', deploying: '#6aa2ff' }[h] || '#ff6b6b'; }
+  hl(h) { return { healthy: 'Healthy', degraded: 'Degraded', deploying: 'Deploying' }[h] || 'Down'; }
+  rgba(hex, a) { const n = parseInt(hex.slice(1), 16); return `rgba(${n >> 16},${(n >> 8) & 255},${n & 255},${a})`; }
+  rand(n) { const c = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_'; let s = ''; for (let i = 0; i < n; i++) s += c[Math.floor(Math.random() * 64)]; return s; }
+  now() { const d = new Date(); return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); }
+  persist(patch) { const s = { ...this.state, ...patch }; try { localStorage.setItem('gridline.state', JSON.stringify({ mode: s.mode, favs: s.favs, recent: s.recent })); } catch (e) {} }
+
+  setHost = el => { this.hostEl = el; };
+  setPins = el => { this.pinsEl = el; };
+
+  componentDidMount() {
+    this.onKey = e => { if (e.key !== 'Escape') return; if (this.state.modal) this.closeModal(); else if (this.state.selected) this.overview(); };
+    window.addEventListener('keydown', this.onKey);
+    this.init3D();
+  }
+  componentWillUnmount() {
+    this._dead = true; window.removeEventListener('keydown', this.onKey);
+    cancelAnimationFrame(this.raf); if (this.ro) this.ro.disconnect(); if (this.renderer) this.renderer.dispose();
+    clearInterval(this.upTimer);
+  }
+
+  select = (id) => {
+    const recent = [id, ...this.state.recent.filter(x => x !== id)].slice(0, 3);
+    this.persist({ recent });
+    this.setState({ selected: id, modal: false, recent, zoom: 1, mdUrl: null, idToken: null });
+    this.flyTo(id);
+  };
+  overview = () => { this.setState({ selected: null, modal: false, zoom: 1 }); this.tweenCam({ tx: 0, ty: 0, tz: 0, r: 120, ph: 0.95, shift: 0 }); };
+  closeModal = () => this.setState({ modal: false });
+  toggleFav = (id) => { const favs = this.state.favs.includes(id) ? this.state.favs.filter(x => x !== id) : [...this.state.favs, id]; this.persist({ favs }); this.setState({ favs }); };
+  setMode = (mode) => { this.persist({ mode }); this.setState({ mode }); if (mode === '3d' && this.state.selected) this.flyTo(this.state.selected, true); };
+
+  flyTo(id, instant) {
+    const c = this.center3 && this.center3[id]; if (!c) return;
+    this.tweenCam({ tx: c.x, ty: c.H * 0.55, tz: c.z, r: Math.max(32, c.H * 2.2), ph: 1.1, shift: 0.14 }, instant);
+  }
+  tweenCam(to, instant) {
+    if (!this.cs) return;
+    if (instant) { Object.assign(this.cs, to); this.tw = null; return; }
+    this.tw = { from: { ...this.cs }, to, t0: performance.now(), dur: 1200 };
+  }
+
+  isoDown = (e) => {
+    if (e.button !== 0) return;
+    const D = { x: e.clientX, rot0: this.state.rot, moved: 0 }; this.isoMoved = 0;
+    const mv = ev => { const dx = ev.clientX - D.x; D.moved = Math.max(D.moved, Math.abs(dx)); this.isoMoved = D.moved; if (D.moved > 4) this.setState({ rot: D.rot0 + dx * 0.35, isoDrag: true }); };
+    const up = () => { window.removeEventListener('pointermove', mv); window.removeEventListener('pointerup', up); if (this.state.isoDrag) this.setState({ isoDrag: false }); };
+    window.addEventListener('pointermove', mv); window.addEventListener('pointerup', up);
+  };
+  isoWheel = (e) => { const dy = e.deltaY; this.setState(s => ({ zoom: Math.min(2.5, Math.max(0.5, s.zoom * (1 - dy * 0.0012))) })); };
+  isoClick = (id) => { if (this.isoMoved > 4) return; this.select(id); };
+
+  async init3D() {
+    let THREE;
+    try { THREE = await import('https://unpkg.com/three@0.160.0/build/three.module.js'); } catch (e) { this.setState({ err3d: true }); return; }
+    if (this._dead || !this.hostEl) return;
+    try { await document.fonts.ready; } catch (e) {}
+    let renderer;
+    try { renderer = new THREE.WebGLRenderer({ antialias: true }); } catch (e) { this.setState({ err3d: true }); return; }
+    const host = this.hostEl;
+    renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
+    renderer.setClearColor(0x070b13, 1);
+    const cv = renderer.domElement; cv.style.display = 'block'; cv.style.width = '100%'; cv.style.height = '100%'; cv.style.touchAction = 'none';
+    host.appendChild(cv);
+    const scene = new THREE.Scene(); scene.fog = new THREE.Fog(0x070b13, 150, 320);
+    const camera = new THREE.PerspectiveCamera(36, 1, 0.5, 800);
+    scene.add(new THREE.HemisphereLight(0x6b95d8, 0x04060a, 0.8));
+    const dl = new THREE.DirectionalLight(0xa9c8ff, 1.0); dl.position.set(-50, 90, 40); scene.add(dl);
+    const ground = new THREE.Mesh(new THREE.PlaneGeometry(600, 600), new THREE.MeshStandardMaterial({ color: 0x070c16, roughness: 1 }));
+    ground.rotation.x = -Math.PI / 2; scene.add(ground);
+    const grid = new THREE.GridHelper(120, 30, 0x1b3a5a, 0x10213a); grid.position.y = 0.02; scene.add(grid);
+    const roadMat = new THREE.MeshBasicMaterial({ color: 0x5fe1ec, transparent: true, opacity: 0.45 });
+    [[84, 0.25], [0.25, 84]].forEach(([w, d]) => { const m = new THREE.Mesh(new THREE.PlaneGeometry(w, d), roadMat); m.rotation.x = -Math.PI / 2; m.position.y = 0.05; scene.add(m); });
+
+    const textTex = (txt) => { const c = document.createElement('canvas'); c.width = 1024; c.height = 96; const g = c.getContext('2d'); g.font = "500 46px 'JetBrains Mono', monospace"; g.fillStyle = '#7fd6e0'; g.textBaseline = 'middle'; g.fillText(txt.toUpperCase(), 8, 48); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t; };
+    const plateMat = new THREE.MeshStandardMaterial({ color: 0x0b1526, roughness: 0.9 });
+    const edgeMatD = new THREE.LineBasicMaterial({ color: 0x5fe1ec, transparent: true, opacity: 0.3 });
+    this.districts.forEach(D => {
+      const w = (D.x1 - D.x0) / 10, d = (D.y1 - D.y0) / 10, cx = ((D.x0 + D.x1) / 2 - 400) / 10, cz = ((D.y0 + D.y1) / 2 - 400) / 10;
+      const geo = new THREE.BoxGeometry(w, 0.3, d); const p = new THREE.Mesh(geo, plateMat); p.position.set(cx, 0.15, cz); scene.add(p);
+      const e = new THREE.LineSegments(new THREE.EdgesGeometry(geo), edgeMatD); e.position.copy(p.position); scene.add(e);
+      const lbl = new THREE.Mesh(new THREE.PlaneGeometry(16, 1.5), new THREE.MeshBasicMaterial({ map: textTex(D.name), transparent: true, depthWrite: false }));
+      lbl.rotation.x = -Math.PI / 2; lbl.position.set(cx - w / 2 + 8.8, 0.32, cz + d / 2 - 1.3); scene.add(lbl);
+    });
+
+    const winTex = (() => { const c = document.createElement('canvas'); c.width = 64; c.height = 128; const g = c.getContext('2d'); g.fillStyle = '#000'; g.fillRect(0, 0, 64, 128); for (let r = 0; r < 16; r++) for (let k = 0; k < 4; k++) { if (Math.random() < 0.55) { g.fillStyle = `rgba(255,255,255,${0.25 + Math.random() * 0.75})`; g.fillRect(k * 16 + 3, r * 8 + 2, 10, 4); } } const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; return t; })();
+    const sideMat = (color, intensity, w, h) => { const t = winTex.clone(); t.needsUpdate = true; t.repeat.set(Math.max(1, Math.round(w / 2.5)), Math.max(1, Math.round(h / 4))); return new THREE.MeshStandardMaterial({ color: 0x0b1322, roughness: 0.5, metalness: 0.45, emissive: new THREE.Color(color), emissiveMap: t, emissiveIntensity: intensity }); };
+    const roofMat = (color) => new THREE.MeshStandardMaterial({ color: 0x101b2e, roughness: 0.8, emissive: new THREE.Color(color), emissiveIntensity: 0.08 });
+
+    const fRoof = roofMat(0x6aa2ff), fEdge = new THREE.LineBasicMaterial({ color: 0x3d6fa0, transparent: true, opacity: 0.3 });
+    this.fillers.forEach(f => {
+      const w = f.w / 10, d = f.d / 10, h = f.h / 7; const geo = new THREE.BoxGeometry(w, h, d); const sm = sideMat(0x7fb0e0, 0.35, w, h);
+      const m = new THREE.Mesh(geo, [sm, sm, fRoof, fRoof, sm, sm]); m.position.set((f.x + f.w / 2 - 400) / 10, h / 2 + 0.3, (f.y + f.d / 2 - 400) / 10); scene.add(m);
+      const e = new THREE.LineSegments(new THREE.EdgesGeometry(geo), fEdge); e.position.copy(m.position); scene.add(e);
+    });
+
+    const glowTex = (() => { const c = document.createElement('canvas'); c.width = c.height = 128; const g = c.getContext('2d'); const gr = g.createRadialGradient(64, 64, 0, 64, 64, 64); gr.addColorStop(0, 'rgba(255,255,255,1)'); gr.addColorStop(0.25, 'rgba(255,255,255,0.45)'); gr.addColorStop(1, 'rgba(255,255,255,0)'); g.fillStyle = gr; g.fillRect(0, 0, 128, 128); return new THREE.CanvasTexture(c); })();
+
+    this.pick = []; this.svcFx = {}; this.pinPos = {}; this.center3 = {};
+    this.svcs.forEach(s => {
+      const col = this.hc(s.health), fx = { edges: [] };
+      const H = s.hIso / 7, ccx = (s.x + s.w / 2 - 400) / 10, ccz = (s.y + s.d / 2 - 400) / 10;
+      this.segs(s).forEach(seg => {
+        const w = seg.w / 10, d = seg.d / 10, h = seg.h / 7, y0 = seg.z / 7 + 0.3;
+        const cx = (s.x + seg.x + seg.w / 2 - 400) / 10, cz = (s.y + seg.y + seg.d / 2 - 400) / 10;
+        let geo, mesh;
+        if (seg.build) {
+          geo = new THREE.BoxGeometry(w, h, d, 2, Math.max(3, Math.round(h / 1.2)), 2);
+          mesh = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: 0x6aa2ff, wireframe: true, transparent: true, opacity: 0.65 }));
+          const core = new THREE.Mesh(new THREE.BoxGeometry(w * 0.72, h * 0.45, d * 0.72), sideMat(col, 0.6, w, h)); core.position.set(cx, y0 + h * 0.225, cz); core.userData.svc = s.id; scene.add(core); this.pick.push(core);
+          const steel = new THREE.MeshStandardMaterial({ color: 0x9fb4cc, emissive: 0x6aa2ff, emissiveIntensity: 0.3, roughness: 0.5 });
+          const mh = y0 + h + 7, mx = cx + w / 2 + 1.4, mz = cz - d / 2 - 1.4;
+          const mast = new THREE.Mesh(new THREE.BoxGeometry(0.5, mh, 0.5), steel); mast.position.set(mx, mh / 2, mz); scene.add(mast);
+          const jib = new THREE.Group(); jib.position.set(mx, mh, mz);
+          const arm = new THREE.Mesh(new THREE.BoxGeometry(14, 0.45, 0.45), steel); arm.position.x = -4; jib.add(arm);
+          const cw = new THREE.Mesh(new THREE.BoxGeometry(1.6, 1, 0.9), steel); cw.position.set(2.6, -0.6, 0); jib.add(cw);
+          const cable = new THREE.Mesh(new THREE.BoxGeometry(0.06, 5, 0.06), steel); cable.position.set(-8, -2.5, 0); jib.add(cable);
+          const tip = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: 0xff6b6b, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true })); tip.scale.set(2.2, 2.2, 1); tip.position.set(0, 0.8, 0); jib.add(tip);
+          scene.add(jib); fx.jib = jib; fx.tip = tip;
+        } else {
+          geo = seg.cyl ? new THREE.CylinderGeometry(w / 2, w / 2, h, 40) : new THREE.BoxGeometry(w, h, d);
+          const sm = sideMat(col, 0.95, seg.cyl ? w * 3 : w, h), rm = roofMat(col);
+          mesh = new THREE.Mesh(geo, seg.cyl ? [sm, rm, rm] : [sm, sm, rm, rm, sm, sm]);
+        }
+        mesh.position.set(cx, y0 + h / 2, cz); mesh.userData.svc = s.id; scene.add(mesh); this.pick.push(mesh);
+        if (!seg.build) { const em = new THREE.LineBasicMaterial({ color: new THREE.Color(col), transparent: true, opacity: 0.5 }); const e = new THREE.LineSegments(new THREE.EdgesGeometry(geo, 30), em); e.position.copy(mesh.position); scene.add(e); fx.edges.push(em); }
+      });
+      if (s.kind === 'tower') { const ant = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.16, 6, 8), new THREE.MeshStandardMaterial({ color: 0x9fb4cc })); ant.position.set(ccx, H + 0.3 + 3, ccz); scene.add(ant); }
+      if (s.kind === 'cylinder') { fx.rings = []; [0.3, 0.55, 0.8].forEach(k => { const r = new THREE.Mesh(new THREE.TorusGeometry(s.w * 0.04 + 0.6, 0.05, 8, 64), new THREE.MeshBasicMaterial({ color: new THREE.Color(col), transparent: true, opacity: 0.6 })); r.rotation.x = Math.PI / 2; r.position.set(ccx, 0.3 + H * k, ccz); scene.add(r); fx.rings.push(r); }); }
+      const topY = H + 0.3 + (s.kind === 'tower' ? 6 : 0.8);
+      const b = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: new THREE.Color(col), blending: THREE.AdditiveBlending, depthWrite: false, transparent: true })); b.scale.set(5, 5, 1); b.position.set(ccx, topY, ccz); scene.add(b); fx.beacon = b;
+      this.pinPos[s.id] = new THREE.Vector3(ccx, topY + 1.8, ccz);
+      this.svcFx[s.id] = fx; this.center3[s.id] = { x: ccx, z: ccz, H };
+    });
+
+    const selCol = new THREE.Color('#5fe1ec');
+    this.selRing = new THREE.Mesh(new THREE.RingGeometry(1, 1.1, 64), new THREE.MeshBasicMaterial({ color: selCol, transparent: true, opacity: 0.9, side: THREE.DoubleSide, blending: THREE.AdditiveBlending, depthWrite: false }));
+    this.selRing.rotation.x = -Math.PI / 2; this.selRing.visible = false; scene.add(this.selRing);
+    this.beam = new THREE.Mesh(new THREE.CylinderGeometry(1, 1, 1, 48, 1, true), new THREE.MeshBasicMaterial({ color: selCol, transparent: true, opacity: 0.06, side: THREE.DoubleSide, blending: THREE.AdditiveBlending, depthWrite: false }));
+    this.beam.visible = false; scene.add(this.beam);
+
+    this.arcs = new THREE.Group(); scene.add(this.arcs); this.dots = [];
+    const arcMat = new THREE.LineBasicMaterial({ color: 0x6aa2ff, transparent: true, opacity: 0.28 });
+    const dotMat = new THREE.SpriteMaterial({ map: glowTex, color: 0x9ff3fa, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true });
+    [['identity', 'orders'], ['identity', 'payments'], ['orders', 'payments'], ['orders', 'notify'], ['payments', 'notify'], ['identity', 'media'], ['media', 'notify']].forEach(([a, bb], i) => {
+      const A = this.center3[a], B = this.center3[bb];
+      const p0 = new THREE.Vector3(A.x, A.H * 0.6, A.z), p2 = new THREE.Vector3(B.x, B.H * 0.6, B.z);
+      const p1 = p0.clone().add(p2).multiplyScalar(0.5); p1.y = Math.max(A.H, B.H) + p0.distanceTo(p2) * 0.25;
+      const curve = new THREE.QuadraticBezierCurve3(p0, p1, p2);
+      this.arcs.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(curve.getPoints(48)), arcMat));
+      for (let k = 0; k < 2; k++) { const sp = new THREE.Sprite(dotMat); sp.scale.set(1.4, 1.4, 1); this.arcs.add(sp); this.dots.push({ curve, s: sp, off: k * 0.5 + i * 0.13, speed: 0.1 + (i % 3) * 0.04, dir: k % 2 ? -1 : 1 }); }
+    });
+
+    this.cs = { tx: 0, ty: 0, tz: 0, r: 120, th: 0.9, ph: 0.95, shift: 0 };
+    Object.assign(this, { renderer, scene, camera });
+    const ray = new THREE.Raycaster(), ndc = new THREE.Vector2();
+    const hit = (e) => { const r = cv.getBoundingClientRect(); ndc.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1); ray.setFromCamera(ndc, camera); const h = ray.intersectObjects(this.pick, false)[0]; return h ? h.object.userData.svc : null; };
+    cv.addEventListener('pointerdown', e => { this.drag = { x: e.clientX, y: e.clientY, moved: 0, pan: e.button === 2 || e.shiftKey }; cv.setPointerCapture(e.pointerId); });
+    cv.addEventListener('pointermove', e => {
+      const D = this.drag;
+      if (D) {
+        const dx = e.clientX - D.x, dy = e.clientY - D.y; D.x = e.clientX; D.y = e.clientY; D.moved += Math.abs(dx) + Math.abs(dy);
+        if (D.moved < 4) return; this.tw = null; const cs = this.cs; cv.style.cursor = 'grabbing';
+        if (D.pan) { const k = cs.r * 0.0016, s = Math.sin(cs.th), c = Math.cos(cs.th); cs.tx -= s * dx * k + c * dy * k; cs.tz += c * dx * k - s * dy * k; }
+        else { cs.th += dx * 0.006; cs.ph = Math.min(1.38, Math.max(0.3, cs.ph - dy * 0.004)); }
+        return;
+      }
+      const id = hit(e); if (id !== this.hover) { this.hover = id; cv.style.cursor = id ? 'pointer' : 'grab'; }
+    });
+    cv.addEventListener('pointerup', e => { const D = this.drag; this.drag = null; cv.style.cursor = this.hover ? 'pointer' : 'grab'; if (D && D.moved < 5) { const id = hit(e); if (id) this.select(id); } });
+    cv.addEventListener('contextmenu', e => e.preventDefault());
+    cv.addEventListener('wheel', e => { e.preventDefault(); this.tw = null; this.cs.r = Math.min(200, Math.max(12, this.cs.r * (1 + e.deltaY * 0.0012))); }, { passive: false });
+
+    const size = () => { const w = host.clientWidth, h = host.clientHeight; if (!w || !h) return; renderer.setSize(w, h, false); camera.aspect = w / h; this.W = w; this.H = h; };
+    this.ro = new ResizeObserver(size); this.ro.observe(host); size();
+
+    const v = new THREE.Vector3();
+    const tick = (now) => {
+      this.raf = requestAnimationFrame(tick);
+      if (this.state.mode !== '3d' || !this.W) return;
+      const t = now / 1000, cs = this.cs;
+      if (this.tw) { const k = Math.min(1, (now - this.tw.t0) / this.tw.dur); const e = k < 0.5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2; for (const key in this.tw.to) cs[key] = this.tw.from[key] + (this.tw.to[key] - this.tw.from[key]) * e; if (k >= 1) this.tw = null; }
+      else if (!this.drag && !this.state.selected && (this.props.autoRotate ?? true)) cs.th += 0.0007;
+      const sp = Math.sin(cs.ph);
+      camera.position.set(cs.tx + cs.r * sp * Math.cos(cs.th), cs.ty + cs.r * Math.cos(cs.ph), cs.tz + cs.r * sp * Math.sin(cs.th));
+      camera.lookAt(cs.tx, cs.ty, cs.tz);
+      camera.setViewOffset(this.W, this.H, cs.shift * this.W, 0, this.W, this.H);
+      const sel = this.state.selected;
+      for (const id in this.svcFx) {
+        const fx = this.svcFx[id], s = this.svc(id), on = id === sel || id === this.hover;
+        fx.edges.forEach(m => { m.opacity = on ? 1 : 0.5; });
+        fx.beacon.material.opacity = s.health === 'degraded' ? 0.3 + 0.7 * (0.5 + 0.5 * Math.sin(t * 5)) : 0.7 + 0.15 * Math.sin(t * 1.5 + s.x);
+        if (fx.jib) { fx.jib.rotation.y = Math.sin(t * 0.3) * 1.1; fx.tip.material.opacity = Math.sin(t * 4) > 0 ? 1 : 0.15; }
+        if (fx.rings) fx.rings.forEach((r, i) => { const k = (t * 0.35 + i / 3) % 1; r.scale.setScalar(1 + k * 0.7); r.material.opacity = 0.75 * (1 - k); });
+      }
+      if (sel && this.center3[sel]) {
+        const c = this.center3[sel], s = this.svc(sel), rad = Math.max(s.w, s.d) / 10 * 0.85;
+        this.selRing.visible = this.beam.visible = true;
+        this.selRing.position.set(c.x, 0.36, c.z); this.selRing.scale.setScalar(rad * (1 + 0.06 * Math.sin(t * 3)));
+        this.beam.position.set(c.x, c.H + 40.3, c.z); this.beam.scale.set(rad * 0.7, 80, rad * 0.7);
+      } else { this.selRing.visible = this.beam.visible = false; }
+      this.arcs.visible = this.props.showTraffic ?? true;
+      this.dots.forEach(d => { let k = (t * d.speed + d.off) % 1; if (d.dir < 0) k = 1 - k; d.s.position.copy(d.curve.getPoint(k)); });
+      renderer.render(scene, camera);
+      if (this.pinsEl) this.pinsEl.querySelectorAll('[data-pin]').forEach(el => {
+        const p = this.pinPos[el.getAttribute('data-pin')]; if (!p) return;
+        v.copy(p).project(camera);
+        el.style.transform = `translate(${((v.x + 1) / 2 * this.W).toFixed(1)}px, ${((1 - v.y) / 2 * this.H).toFixed(1)}px) translate(-50%, -100%)`;
+        el.style.opacity = v.z < 1 ? '1' : '0';
+      });
+    };
+    this.raf = requestAnimationFrame(tick);
+    this.setState({ ready3d: true });
+    if (this.state.selected) this.flyTo(this.state.selected, true);
+  }
+
+  isoBoxes() {
+    const st = this.state, out = [];
+    const px = n => n.toFixed(1) + 'px';
+    const winA = (b, w) => `linear-gradient(90deg, ${b} 50%, transparent 50%) 0 0 / 7px 9px, linear-gradient(${b} 45%, ${w} 45%) 0 0 / 7px 9px, ${b}`;
+    const winB = (b, w) => `linear-gradient(${b} 50%, transparent 50%) 0 0 / 9px 7px, linear-gradient(90deg, ${b} 45%, ${w} 45%) 0 0 / 9px 7px, ${b}`;
+    const push = (o) => out.push({ left: px(o.x), top: px(o.y), w: px(o.w), d: px(o.d), h: px(o.h), tz: `translateZ(${px(o.z)})`, topT: `translateZ(${px(o.h)})`, ...o.look, onClick: o.onClick || undefined, cursor: o.onClick ? 'pointer' : 'inherit' });
+    const fl = { sideA: winA('#0d1626', 'rgba(127,176,224,0.20)'), sideB: winB('#0a111e', 'rgba(127,176,224,0.12)'), top: '#111b2c', topShadow: 'none', edge: 'inset 0 0 0 1px rgba(61,111,160,0.25)', border: 'none' };
+    this.fillers.forEach(f => push({ x: f.x, y: f.y, z: 0, w: f.w, d: f.d, h: f.h, look: fl }));
+    this.svcs.forEach(s => {
+      const c = this.hc(s.health), on = st.selected === s.id;
+      this.segs(s).forEach(g => {
+        const scaf = `repeating-linear-gradient(0deg, ${this.rgba(c, 0.55)} 0 1px, transparent 1px 11px), repeating-linear-gradient(90deg, ${this.rgba(c, 0.55)} 0 1px, ${this.rgba(c, 0.06)} 1px 14px)`;
+        const look = g.build
+          ? { sideA: scaf, sideB: scaf, top: this.rgba(c, 0.1), topShadow: 'none', edge: 'none', border: `1px dashed ${c}` }
+          : { sideA: winA('#0f1b2e', this.rgba(c, 0.6)), sideB: winB('#0b1424', this.rgba(c, 0.4)), top: '#14223a', topShadow: g.top ? `0 0 ${on ? 60 : 36}px ${this.rgba(c, on ? 0.75 : 0.5)}, inset 0 0 0 1px ${c}` : `inset 0 0 0 1px ${this.rgba(c, 0.6)}`, edge: `inset 0 0 0 1px ${this.rgba(c, on ? 0.95 : 0.45)}`, border: 'none' };
+        push({ x: s.x + g.x, y: s.y + g.y, z: g.z, w: g.w, d: g.d, h: g.h, look, onClick: () => this.isoClick(s.id) });
+      });
+    });
+    return out;
+  }
+
+  renderVals() {
+    const st = this.state, sel = this.svc(st.selected), q = st.query.trim().toLowerCase();
+    const chip = c => ({ chipColor: c, chipBg: this.rgba(c, 0.12), chipBorder: this.rgba(c, 0.35) });
+    const seg = (on) => ({ bg: on ? 'rgba(95,225,236,0.16)' : 'transparent', color: on ? '#9ff3fa' : '#9aa8bc' });
+    const item = s => {
+      const on = st.selected === s.id, fav = st.favs.includes(s.id);
+      return { id: s.id, name: s.name, ver: s.ver, color: this.hc(s.health), bg: on ? 'rgba(95,225,236,0.10)' : 'transparent', nameColor: on ? '#ffffff' : '#c9d6e4',
+        star: fav ? '★' : '☆', starColor: fav ? '#5fe1ec' : '#56657a', initials: s.name.slice(0, 2).toUpperCase(), ring: on ? '#5fe1ec' : 'rgba(130,190,255,0.16)',
+        onSelect: () => this.select(s.id), onFav: e => { e.stopPropagation(); this.toggleFav(s.id); } };
+    };
+    const match = s => !q || (s.name + ' ' + s.domain).toLowerCase().includes(q);
+    const groups = this.districts.map(D => { const items = this.svcs.filter(s => s.domain === D.name && match(s)).map(item); return { name: D.name, count: items.length, items }; }).filter(g => g.items.length);
+
+    let cx = 400, cy = 400, cz = 0, S = 0.78 * st.zoom, offX = 0;
+    if (sel) { cx = sel.x + sel.w / 2; cy = sel.y + sel.d / 2; cz = sel.hIso * 0.5; S = Math.min(2.4, Math.max(1.3, 300 / sel.hIso)) * st.zoom; offX = st.modal ? 0 : -180; }
+    const isoTrans = st.isoDrag ? 'none' : 'transform 1.1s cubic-bezier(.65,0,.35,1)';
+    const isoLabels = this.svcs.map(s => {
+      const on = st.selected === s.id, c = this.hc(s.health);
+      return { name: s.name, color: c, left: (s.x + s.w / 2) + 'px', top: (s.y + s.d / 2) + 'px', bg: on ? 'rgba(20,50,64,0.92)' : 'rgba(8,13,23,0.85)', border: on ? '#5fe1ec' : 'rgba(130,190,255,0.25)',
+        transform: `translateZ(${s.hIso + 16}px) rotateZ(${-st.rot}deg) rotateX(-55deg) scale(${(1 / S).toFixed(3)}) translate(-50%, -100%)`, transition: isoTrans, onClick: () => this.isoClick(s.id) };
+    });
+    const ringSize = sel ? Math.max(sel.w, sel.d) * 1.45 : 0;
+
+    const users = st.users.filter(u => !st.idQuery || (u.name + u.email).toLowerCase().includes(st.idQuery.toLowerCase()));
+    const ini = n => n.split(' ').map(x => x[0]).join('').slice(0, 2);
+    const idU0 = st.users.find(u => u.id === st.idSel);
+    const ST = ['Pending', 'Paid', 'Shipped', 'Delivered'];
+    const oc = { Pending: '#f2b45a', Paid: '#6aa2ff', Shipped: '#5fe1ec', Delivered: '#7fe0a6', Cancelled: '#ff6b6b' };
+    const tot = o => o.items.reduce((a, [, q2, p]) => a + q2 * p, 0);
+    const setOrder = (id, status) => this.setState(s => ({ orders: s.orders.map(o => o.id === id ? { ...o, status } : o) }));
+    const od = st.orders.find(o => o.id === st.ordSel);
+    const oIdx = ST.indexOf(od.status);
+    const rows = st.orders.filter(o => st.ordFilter === 'All' || o.status === st.ordFilter);
+    const sym = { USD: '$', EUR: '€', TWD: 'NT$' };
+    const pc = { succeeded: '#5fe1ec', declined: '#ff6b6b', requires_action: '#f2b45a' };
+    const ntCounts = { 'All users': '12,480', 'Customers with open orders': '316', 'Admins': '9' };
+    const files = st.mdFiles[st.mdBucket] || [];
+    const mdD = files.find(f => f.n === st.mdSel);
+
+    return {
+      sideW: st.sidebarOpen ? '288px' : '64px', sidebarOpen: st.sidebarOpen, sidebarClosed: !st.sidebarOpen,
+      toggleSidebar: () => this.setState(s => ({ sidebarOpen: !s.sidebarOpen })),
+      query: st.query, onQuery: e => this.setState({ query: e.target.value }),
+      showFavs: !q && st.favs.length > 0, favItems: st.favs.map(id => this.svc(id)).filter(Boolean).map(item),
+      showRecent: !q && st.recent.length > 0, recentItems: st.recent.map(id => this.svc(id)).filter(Boolean).map(item),
+      groups, noResults: groups.length === 0, railItems: this.svcs.map(item),
+      svcCount: this.svcs.length, nHealthy: this.svcs.filter(s => s.health === 'healthy').length, nDegraded: this.svcs.filter(s => s.health === 'degraded').length, nDeploying: this.svcs.filter(s => s.health === 'deploying').length,
+
+      setHost: this.setHost, setPins: this.setPins,
+      disp3d: st.mode === '3d' ? 'block' : 'none', dispIso: st.mode === 'iso' ? 'block' : 'none',
+      loading3d: st.mode === '3d' && !st.ready3d && !st.err3d, err3dShown: st.mode === '3d' && st.err3d,
+      pins: this.svcs.map(s => { const on = st.selected === s.id; return { id: s.id, name: s.name, color: this.hc(s.health), bg: on ? 'rgba(20,50,64,0.92)' : 'rgba(8,13,23,0.82)', border: on ? '#5fe1ec' : 'rgba(130,190,255,0.25)', onClick: () => this.select(s.id) }; }),
+      isoDown: this.isoDown, isoWheel: this.isoWheel,
+      isoTransform: `translate(${offX}px, 0px) scale3d(${S}, ${S}, ${S}) rotateX(55deg) rotateZ(${st.rot}deg) translate3d(${-cx}px, ${-cy}px, ${-cz}px)`,
+      isoTransition: isoTrans, isoBoxes: this.isoBoxes(), isoLabels,
+      hasIsoRing: !!sel, isoRing: sel ? { left: (sel.x + sel.w / 2 - ringSize / 2) + 'px', top: (sel.y + sel.d / 2 - ringSize / 2) + 'px', size: ringSize + 'px' } : {},
+
+      hasSel: !!sel, overview: this.overview, crumbCity: sel ? '#9aa8bc' : '#e6edf5',
+      modeBtns: [{ label: '3D', on: st.mode === '3d', m: '3d' }, { label: 'Isometric', on: st.mode === 'iso', m: 'iso' }].map(b => ({ label: b.label, ...seg(b.on), onClick: () => this.setMode(b.m) })),
+      showChrome: !st.modal, hintText: st.mode === '3d' ? 'Drag to orbit · Scroll to zoom · Right-drag to pan' : 'Drag to rotate · Scroll to zoom',
+      showPanel: !!sel && !st.modal, modal: !!sel && st.modal,
+      selName: sel ? sel.name : '', selDomain: sel ? sel.domain : '', selDesc: sel ? sel.desc : '', selVersion: sel ? sel.version : '', selVer: sel ? sel.ver : '', selEndpoint: sel ? sel.endpoint : '',
+      selColor: sel ? this.hc(sel.health) : '#5fe1ec', selHealth: sel ? this.hl(sel.health) : '',
+      selChipBg: sel ? this.rgba(this.hc(sel.health), 0.12) : 'transparent', selChipBorder: sel ? this.rgba(this.hc(sel.health), 0.4) : 'transparent', selGlow: sel ? this.rgba(this.hc(sel.health), 0.12) : 'transparent',
+      selIncident: sel && sel.incident ? sel.incident : '', selRollout: !!(sel && sel.rollout), selRolloutPct: sel && sel.rollout ? sel.rollout + '%' : '0%', selRolloutText: sel && sel.rolloutText || '',
+      selSpecs: sel ? [{ k: 'Throughput', v: sel.rps.toLocaleString() + ' req/s' }, { k: 'p99 latency', v: sel.p99 }, { k: 'Uptime 30d', v: sel.uptime }, { k: 'Instances', v: String(sel.instances) }, { k: 'Owner', v: sel.owner }, { k: 'Region', v: sel.region }] : [],
+      selFeatures: sel ? sel.features : [],
+      selStar: sel && st.favs.includes(sel.id) ? '★' : '☆', selStarColor: sel && st.favs.includes(sel.id) ? '#5fe1ec' : '#9aa8bc',
+      toggleSelFav: () => sel && this.toggleFav(sel.id),
+      openModal: () => this.setState({ modal: true }), closeModal: this.closeModal,
+      isIdentity: st.selected === 'identity', isOrders: st.selected === 'orders', isPayments: st.selected === 'payments', isNotify: st.selected === 'notify', isMedia: st.selected === 'media',
+
+      idQuery: st.idQuery, onIdQuery: e => this.setState({ idQuery: e.target.value }),
+      idUsers: users.map(u => ({ ...u, initials: ini(u.name), bg: u.id === st.idSel ? 'rgba(95,225,236,0.08)' : 'rgba(255,255,255,0.015)', border: u.id === st.idSel ? 'rgba(95,225,236,0.45)' : 'rgba(130,190,255,0.10)', onClick: () => this.setState({ idSel: u.id, idToken: null }) })),
+      idU: { ...idU0, initials: ini(idU0.name) },
+      idFacts: [{ k: 'Role', v: idU0.role }, { k: 'MFA', v: idU0.mfa }, { k: 'Last sign-in', v: idU0.last }, { k: 'Sessions', v: String(idU0.sessions) }],
+      revokeSessions: () => this.setState(s => ({ users: s.users.map(u => u.id === s.idSel ? { ...u, sessions: 0 } : u) })),
+      idScopeList: ['read:profile', 'write:profile', 'orders:read', 'payments:write', 'admin'].map(n => { const on = st.idScopes.includes(n); return { name: n, bg: on ? 'rgba(95,225,236,0.14)' : 'transparent', color: on ? '#9ff3fa' : '#9aa8bc', border: on ? 'rgba(95,225,236,0.5)' : 'rgba(130,190,255,0.18)', onClick: () => this.setState(s => ({ idScopes: s.idScopes.includes(n) ? s.idScopes.filter(x => x !== n) : [...s.idScopes, n] })) }; }),
+      idTtls: ['15m', '1h', '24h'].map(l => ({ label: l, ...seg(st.idTtl === l), onClick: () => this.setState({ idTtl: l }) })),
+      issueToken: () => this.setState({ copied: false, idToken: { value: 'eyJhbGciOiJSUzI1NiIsImtpZCI6ImsxIn0.' + this.rand(64) + '.' + this.rand(43), scopes: st.idScopes.join(' ') || 'no scopes', exp: st.idTtl } }),
+      idToken: st.idToken, copyLabel: st.copied ? 'Copied' : 'Copy',
+      copyToken: () => { try { navigator.clipboard.writeText(st.idToken.value); } catch (e) {} this.setState({ copied: true }); },
+
+      ordTabs: ['All', ...ST, 'Cancelled'].map(f => { const on = st.ordFilter === f; return { label: f, count: f === 'All' ? st.orders.length : st.orders.filter(o => o.status === f).length, bg: on ? 'rgba(95,225,236,0.12)' : 'transparent', color: on ? '#9ff3fa' : '#9aa8bc', border: on ? 'rgba(95,225,236,0.45)' : 'rgba(130,190,255,0.14)', onClick: () => this.setState({ ordFilter: f }) }; }),
+      ordRows: rows.map(o => ({ id: o.id, customer: o.customer, items: String(o.items.reduce((a, i) => a + i[1], 0)), total: '$' + tot(o).toFixed(2), status: o.status, time: o.time, ...chip(oc[o.status]), bg: o.id === st.ordSel ? 'rgba(95,225,236,0.07)' : 'transparent', onClick: () => this.setState({ ordSel: o.id }) })),
+      ordEmpty: rows.length === 0,
+      ordD: { id: od.id, customer: od.customer, status: od.status, ...chip(oc[od.status]), total: '$' + tot(od).toFixed(2),
+        lines: od.items.map(([n, q2, p]) => ({ name: n, qty: '× ' + q2, price: '$' + (q2 * p).toFixed(2) })),
+        steps: ST.map((l, i) => { const done = od.status !== 'Cancelled' && i <= oIdx; return { label: l, color: done ? '#5fe1ec' : '#2a3a52', fill: done ? '#5fe1ec' : 'transparent', text: done ? '#e6edf5' : '#7f8da3' }; }),
+        canAdvance: oIdx >= 0 && oIdx < 3, nextLabel: oIdx >= 0 && oIdx < 3 ? 'Mark as ' + ST[oIdx + 1].toLowerCase() : '', onAdvance: () => setOrder(od.id, ST[oIdx + 1]),
+        canCancel: od.status === 'Pending' || od.status === 'Paid', onCancel: () => setOrder(od.id, 'Cancelled') },
+
+      payIncident: this.svc('payments').incident,
+      payAmount: st.payAmount, onPayAmount: e => this.setState({ payAmount: e.target.value }),
+      payDesc: st.payDesc, onPayDesc: e => this.setState({ payDesc: e.target.value }),
+      payCurs: ['USD', 'EUR', 'TWD'].map(c => ({ label: c, ...seg(st.payCur === c), onClick: () => this.setState({ payCur: c }) })),
+      payCards: [{ last4: '4242', brand: 'Visa', note: 'Succeeds', nc: '#5fe1ec' }, { last4: '0002', brand: 'Visa', note: 'Declined', nc: '#ff6b6b' }, { last4: '3155', brand: 'Mastercard', note: 'Requires 3-D Secure', nc: '#f2b45a' }].map(c => { const on = st.payCard === c.last4; return { ...c, noteColor: c.nc, bg: on ? 'rgba(95,225,236,0.07)' : 'transparent', border: on ? 'rgba(95,225,236,0.45)' : 'rgba(130,190,255,0.14)', onClick: () => this.setState({ payCard: c.last4 }) }; }),
+      payBtnLabel: st.payBusy ? 'Processing…' : 'Create charge', payBtnOpacity: st.payBusy ? '0.6' : '1',
+      createCharge: () => {
+        if (st.payBusy) return;
+        const amt = parseFloat(st.payAmount) || 0, ms = Math.round(380 + Math.random() * 280);
+        this.setState({ payBusy: true });
+        setTimeout(() => {
+          const status = st.payCard === '0002' ? 'declined' : st.payCard === '3155' ? 'requires_action' : 'succeeded';
+          const id = 'ch_' + this.rand(8).replace(/[-_]/g, 'x');
+          const resp = { id, object: 'charge', amount: Math.round(amt * 100), currency: st.payCur.toLowerCase(), status, payment_method: 'card_' + st.payCard, description: st.payDesc, acquirer: st.payCur === 'EUR' ? 'eu-2' : 'ap-1', latency_ms: ms, created: new Date().toISOString() };
+          if (status === 'declined') resp.failure_code = 'card_declined';
+          if (status === 'requires_action') resp.next_action = { type: '3ds_redirect' };
+          this.setState(s => ({ payBusy: false, payResp: JSON.stringify(resp, null, 2), payRespMeta: (status === 'declined' ? '402' : '200') + ' · ' + ms + ' ms',
+            payLog: [{ id, amount: sym[st.payCur] + amt.toFixed(2), status, ms, time: this.now() }, ...s.payLog].slice(0, 6) }));
+        }, ms + 300);
+      },
+      payResp: st.payResp, noPayResp: !st.payResp, payRespMeta: st.payRespMeta,
+      payLog: st.payLog.map(p => ({ ...p, ms: p.ms + ' ms', msColor: p.ms > 400 ? '#f2b45a' : '#9aa8bc', status: p.status.replace('_', ' '), ...chip(pc[p.status]) })),
+
+      ntChannel: st.ntChannel, ntTabs: ['Email', 'SMS', 'Push'].map(c => ({ label: c, ...seg(st.ntChannel === c), onClick: () => this.setState({ ntChannel: c }) })),
+      ntAudience: st.ntAudience, onNtAudience: e => this.setState({ ntAudience: e.target.value }),
+      ntHasSubject: st.ntChannel !== 'SMS', ntSubjectLabel: st.ntChannel === 'Push' ? 'Title' : 'Subject',
+      ntSubject: st.ntSubject, onNtSubject: e => this.setState({ ntSubject: e.target.value }),
+      ntBody: st.ntBody, onNtBody: e => this.setState({ ntBody: e.target.value }),
+      ntCount: st.ntChannel === 'SMS' ? st.ntBody.length + ' / 160' : st.ntBody.length + ' chars', ntCountColor: st.ntChannel === 'SMS' && st.ntBody.length > 160 ? '#ff6b6b' : '#7f8da3',
+      ntIsEmail: st.ntChannel === 'Email', ntIsSms: st.ntChannel === 'SMS', ntIsPush: st.ntChannel === 'Push',
+      ntPrevSubject: st.ntSubject || 'Untitled', ntPrevBody: st.ntBody || 'Your message preview appears here.',
+      ntSendLabel: st.ntBusy ? 'Sending…' : 'Send to ' + ntCounts[st.ntAudience],
+      ntSend: () => {
+        if (st.ntBusy) return;
+        const key = this.rand(6);
+        this.setState(s => ({ ntBusy: true, ntLog: [{ key, channel: s.ntChannel, audience: s.ntAudience, count: ntCounts[s.ntAudience], status: 'Sending…', time: this.now() }, ...s.ntLog].slice(0, 6) }));
+        setTimeout(() => this.setState(s => ({ ntBusy: false, ntLog: s.ntLog.map(l => l.key === key ? { ...l, status: 'Delivered ' + (97 + Math.random() * 2.8).toFixed(1) + '%' } : l) })), 1400);
+      },
+      ntLog: st.ntLog.map(l => ({ ...l, color: l.status.startsWith('Sending') ? '#f2b45a' : '#5fe1ec' })),
+
+      mdBucket: st.mdBucket,
+      mdBuckets: Object.keys(st.mdFiles).map(b => { const on = st.mdBucket === b; return { name: b, count: String(st.mdFiles[b].length), bg: on ? 'rgba(95,225,236,0.10)' : 'transparent', color: on ? '#9ff3fa' : '#c9d6e4', onClick: () => this.setState({ mdBucket: b, mdSel: st.mdFiles[b][0] && st.mdFiles[b][0].n, mdUrl: null }) }; }),
+      mdFiles: files.map(f => ({ ...f, border: f.n === st.mdSel ? 'rgba(95,225,236,0.55)' : 'rgba(130,190,255,0.12)', onClick: () => this.setState({ mdSel: f.n, mdUrl: null }) })),
+      mdHasSel: !!mdD, mdNoSel: !mdD, mdD: mdD || {}, mdUrl: st.mdUrl,
+      mdSign: () => mdD && this.setState({ mdUrl: `https://cdn.acme.io/${st.mdBucket}/${mdD.n}?X-Sig=${this.rand(28)}&X-Expires=3600` }),
+      mdUploading: !!st.mdUpload, mdUpName: st.mdUpload ? st.mdUpload.name : '', mdUpPct: st.mdUpload ? st.mdUpload.pct + '%' : '0%',
+      mdUploadFn: () => {
+        if (st.mdUpload) return;
+        const name = 'upload-' + Math.floor(1000 + Math.random() * 9000) + '.png', bucket = st.mdBucket;
+        this.setState({ mdUpload: { name, pct: 0 } });
+        clearInterval(this.upTimer);
+        this.upTimer = setInterval(() => {
+          const u = this.state.mdUpload; if (!u) return clearInterval(this.upTimer);
+          const pct = Math.min(100, u.pct + 9 + Math.round(Math.random() * 8));
+          if (pct >= 100) { clearInterval(this.upTimer); this.setState(s => ({ mdUpload: null, mdSel: name, mdUrl: null, mdFiles: { ...s.mdFiles, [bucket]: [{ n: name, t: 'IMG', s: '356 KB', d: 'Just now' }, ...s.mdFiles[bucket]] } })); }
+          else this.setState({ mdUpload: { name, pct } });
+        }, 140);
+      }
+    };
+  }
+}
+</script>
+</body>
+</html>
