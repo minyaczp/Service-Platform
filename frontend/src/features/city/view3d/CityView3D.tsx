@@ -9,7 +9,7 @@ import { centreOf, type Vec3 } from '../logic/world';
 import { Arcs } from './Arcs';
 import { AssetsContext, createAssets, disposeAssets } from './assets';
 import { Building, topOf } from './Building';
-import { flyTarget, overviewOf } from './camera';
+import { autoRotating, flyTarget, overviewOf } from './camera';
 import { Fillers } from './Fillers';
 import { Ground, Plate } from './Ground';
 import { OrbitRig } from './OrbitRig';
@@ -24,6 +24,11 @@ export interface CityViewProps {
   readonly layout: CityLayout;
   readonly selection: Selection;
   readonly onSelect: (id: string) => void;
+}
+
+/** 3D-only addition: whether the overview may auto-rotate (NI-05; the store owns it). */
+export interface CityView3DProps extends CityViewProps {
+  readonly autoRotate: boolean;
 }
 
 const FILLER_SEED = 11;
@@ -60,7 +65,7 @@ function usePinElements() {
 }
 
 /** WebGL city (handoff §City view 3D); pins are a DOM overlay beside the canvas (NI-04). */
-export function CityView3D(props: CityViewProps) {
+export function CityView3D(props: CityView3DProps) {
   const [ready, setReady] = useState(false);
   const { elements, register } = usePinElements();
   const anchors = useMemo(() => pinAnchors(props.services, props.layout), [props.services, props.layout]);
@@ -89,12 +94,12 @@ function useGoal(services: readonly Service[], layout: CityLayout, selection: Se
   }, [services, layout, id]);
 }
 
-interface SceneProps extends CityViewProps {
+interface SceneProps extends CityView3DProps {
   readonly anchors: ReadonlyMap<string, Vec3>;
   readonly elements: RefObject<Map<string, HTMLElement>>;
 }
 
-function Scene({ services, layout, selection, onSelect, anchors, elements }: SceneProps) {
+function Scene({ services, layout, selection, onSelect, autoRotate, anchors, elements }: SceneProps) {
   const assets = useAssets();
   const { hover, onHover } = useHover();
   const selectedId = selection.kind === 'service' ? selection.id : '';
@@ -109,7 +114,7 @@ function Scene({ services, layout, selection, onSelect, anchors, elements }: Sce
       <Fillers list={filler} />
       <Buildings services={services} layout={layout} selectedId={selectedId} hover={hover} onSelect={onSelect} onHover={onHover} />
       <Arcs arcs={arcs} />
-      <OrbitRig goal={goal} autoRotate={selectedId === ''} />
+      <OrbitRig goal={goal} autoRotate={autoRotating(selectedId, autoRotate)} />
       <PinProjector anchors={anchors} elements={elements} />
     </AssetsContext.Provider>
   );

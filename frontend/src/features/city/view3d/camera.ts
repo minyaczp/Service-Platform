@@ -21,6 +21,11 @@ export const CAMERA = {
   start: { tx: 0, ty: 0, tz: 0, r: 120, th: 0.9, ph: 0.95, shift: 0 },
 } as const;
 
+/** The overview turns only while rotation is enabled and nothing is selected (handoff §Camera; NI-05). */
+export function autoRotating(selectedId: string, enabled: boolean): boolean {
+  return enabled && selectedId === '';
+}
+
 export function easeInOutCubic(t: number): number {
   return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 }

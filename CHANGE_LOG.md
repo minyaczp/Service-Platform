@@ -1,5 +1,17 @@
 # CHANGE_LOG
 
+## 2026-11-10 — NI-05 · 3D auto-rotate on/off (frontend)
+
+- `TopBar`: icon-only pause / play button left of the 3D | Isometric toggle, 3D only (`aria-label` "Pause
+  rotation" / "Resume rotation", `aria-pressed`).
+- `main.tsx` (flagged, approved in NI-05 Decision 5): `AppState.autoRotate` (initial `true`) and
+  `toggleAutoRotate()`; not part of `Prefs`, so `gridline.state` keeps mode / favs / recent only.
+- `camera.ts`: `autoRotating(selectedId, enabled)`; `CityView3D` takes `autoRotate` (`CityView3DProps`).
+- Checked in the browser: stopped → pins still for 1 s; resume → they move; fly-to and Overview still work while
+  stopped; button absent in Isometric; state kept across 3D ↔ Isometric; reload → rotating; `gridline.state`
+  identical across toggles; console 0 errors.
+- Tests 62 → 66 (`autoRotating` 1, `TopBar` 3). Typecheck, lint (0 warnings), test, build pass.
+
 ## 2026-11-10 — NI-04 · Pins as a DOM overlay (fix StrictMode unmount error) (frontend)
 
 - `city/view3d`: pins no longer use drei `<Html>` (one React root per pin, unmounted synchronously). New

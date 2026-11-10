@@ -17,7 +17,8 @@ health, shape from domain. Phase 1 (NI-01) is the `frontend/` app alone, on 22 m
 
 Lays the services out on district plates (`layout()`), then draws them in one of two views: WebGL
 (`CityView3D`) or CSS 3D (`CityViewIso`). Selecting a building flies the camera (3D) or centres the stage
-(Isometric). The top bar holds the breadcrumb, Overview and the 3D | Isometric toggle. In 3D, building pins
+(Isometric). The top bar holds the breadcrumb, Overview, a pause / resume button for the 3D overview rotation (NI-05) and the
+3D | Isometric toggle. In 3D, building pins
 are an HTML overlay projected from the scene every frame (NI-04).
 
 Related Docs: [feature_city.md](frontend/feature_city.md) · [architecture](feature_architecture.md#frontend-structure)
