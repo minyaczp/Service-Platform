@@ -8,6 +8,7 @@
 | NI-01 · Gridline Service City — Phase 1 frontend with mock data | ✅ Complete — NI-01 |
 | NI-03 · Isometric buildings on/off (simple view) | 🟡 Pending — NI-03 |
 | NI-04 · Pins as a DOM overlay (fix StrictMode unmount error) | ✅ Complete — NI-04 |
+| NI-05 · 3D auto-rotate on/off | 🔵 Draft — NI-05 |
 
 ## New Instructions
 
@@ -70,3 +71,77 @@ work as before.
 **Open Decisions**
 
 （無）
+
+### [NI-05] 🔵 DRAFT — under review · 3D auto-rotate on/off
+
+**Scope:** `frontend/src/features/city/view3d/` (`CityView3D.tsx`, `CityView3D.module.css`, `camera.ts`,
+`camera.test.ts`); `feature_docs/frontend/feature_city.md`. **Outside:** `OrbitRig.tsx` (its `autoRotate`
+prop already exists), `AppState`, `Prefs` / `gridline.state`, `TopBar`, the Isometric view, `main.tsx`,
+`shared/**`.
+
+**Docs consulted**
+
+| Doc | What it settled |
+|---|---|
+| handoff README §City view 3D (Camera) | "slow auto-rotate (+0.0007 rad/frame, toggle `autoRotate`) when nothing is selected" — a toggle is intended; no UI given |
+| `PLAN.md` NI-03 (Decisions 3–4, DD3) | Precedent for a view-local on/off: glass chip at top 64 / left 16, default ON, component-local, not persisted |
+| `feature_docs/frontend/feature_city.md` | `CityView3D` props are the feature's public surface — unchanged here |
+| `view3d/OrbitRig.tsx:82-97`, `CityView3D.tsx:112` | Rotation runs when `autoRotate` is true and no drag; today `autoRotate = selectedId === ''` |
+
+**Problem.** In the 3D overview the camera always rotates (`CityView3D.tsx:112`); the operator cannot stop it.
+**Goal.** A 3D-only "Auto-rotate: On / Off" chip. Off: the overview camera stays still; drag, zoom, pan and
+fly-to behave as before. On: today's behaviour.
+
+**Design decisions**
+
+| # | Choice | Rejected | Why |
+|---|---|---|---|
+| DD1 | Glass chip `Auto-rotate: On/Off`, top 64 / left 16, 3D only, same look as NI-03's Buildings chip | Button in `TopBar` · keyboard shortcut | NI-03 precedent; `TopBar` is shared by both views (would need a mode branch); no shortcut asked |
+| DD2 | Component-local `useState(true)` in `CityView3D`; resets to On on reload or after switching to Isometric and back | Field in `gridline.state` | Persisting changes the stored schema — §5 halt list; NI-03 DD3 made the same call |
+| DD3 | Pure `autoRotating(selectedId, enabled)` in `camera.ts`, true only when nothing is selected and enabled | Inline `&&` in JSX | Testable seam for the rule; `camera.ts` already holds `CAMERA.autoRotate` |
+| DD4 | Chip styles rebuilt in `CityView3D.module.css` (`.toggle`, `.toggleOn`, `.toggleOff`), not imported from `viewIso` | Share NI-03's CSS | §0 *Reuse is designed*: features slices' views change independently; recorded as a rebuilt copy |
+
+**Conditions & their justification**
+
+| Condition | Whose problem | Evidence for the value | When it triggers | Default | If it is wrong | Removal criteria |
+|---|---|---|---|---|---|---|
+| Default On | 使用者 | handoff README: overview auto-rotates | every 3D mount | On | users must click Off each visit → revisit persistence (own item) | operator asks for a remembered choice |
+| Chip at top 64 / left 16, z 15 | 使用者 | NI-03 Decision 4; below the breadcrumb (top 16, ≈40 px tall); under modal z 30 | 3D only | — | overlaps breadcrumb | operator moves it |
+
+**Module decomposition**
+
+| Module / function | Signature — params → returns | Single responsibility | Pure / effectful | Layer | New / reused |
+|---|---|---|---|---|---|
+| `view3d/camera.ts` · `autoRotating` | `(selectedId: string, enabled: boolean) → boolean` | Rotation rule: enabled and nothing selected | pure | logic (camera maths module) | New |
+| `view3d/CityView3D.tsx` · `AutoRotateToggle` | `({ on: boolean; onToggle: () => void }) → JSX` | `<button aria-pressed>` "Auto-rotate: On/Off"; stops pointerdown so a click never starts an orbit drag | view | view | New (rebuilt from NI-03 `BuildingsToggle`) |
+| `view3d/CityView3D.tsx` · `CityView3D` / `Scene` | public props unchanged; `Scene` gains `rotate: boolean` | Holds `useState(true)`; passes `autoRotating(selectedId, rotate)` to `OrbitRig` | view | view | Changed |
+| `CityView3D.module.css` | `.toggle`, `.toggleOn`, `.toggleOff` | Chip look (DD4) | — | view | New |
+
+**Decisions**
+
+| # | Question | Answer | Authority |
+|---|---|---|---|
+| 1 | Split from NI-04 | Own item, after NI-04 | operator, 2026-11-10 |
+
+**Explicitly NOT changing:** `OrbitRig` (prop already exists), `AppState`, `Prefs` / `gridline.state`, `TopBar`,
+`CityViewIso`, fly-to / drag / zoom / pan, pins (NI-04).
+
+**Verification — success conditions**
+
+| Input / action | Expected observable outcome | Checked by |
+|---|---|---|
+| `autoRotating('', true)` · `('', false)` · `('payments', true)` | true · false · false | `auto` — unit test |
+| 3D overview → click "Auto-rotate: On" | label reads Off; a pin's on-screen position is unchanged over 1 s | `auto` — Playwright |
+| Off → click again | label On; pins move again | `auto` — Playwright |
+| Off → select a building → Overview | fly-to still runs; overview stays still | `auto` — Playwright |
+| Off → Isometric → 3D | chip reads On again (DD2) | `auto` — Playwright |
+| 3D 總覽按 Auto-rotate 切到 Off | 城市停止轉動，拖曳、縮放、點建築飛過去都照常，console 沒有錯誤 | `manual` — operator |
+
+**Open Decisions**
+
+| # | Question | Recommendation |
+|---|---|---|
+| 2 | Remember the choice across reloads? | No (DD2) — schema change is a §5 halt; revisit as its own item if wanted |
+| 3 | Chip placement and wording | DD1 |
+| 4 | Manual Verification wording | as drafted above |
+
