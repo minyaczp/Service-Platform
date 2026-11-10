@@ -74,10 +74,11 @@ work as before.
 
 ### [NI-05] 🔵 DRAFT — under review · 3D auto-rotate on/off
 
-**Scope:** `frontend/src/features/city/view3d/` (`CityView3D.tsx`, `CityView3D.module.css`, `camera.ts`,
-`camera.test.ts`); `feature_docs/frontend/feature_city.md`. **Outside:** `OrbitRig.tsx` (its `autoRotate`
-prop already exists), `AppState`, `Prefs` / `gridline.state`, `TopBar`, the Isometric view, `main.tsx`,
-`shared/**`.
+**Scope:** `frontend/src/main.tsx` (⚑ flagged — operator approved, Decision 5: `AppState` field + action and
+wiring), `frontend/src/features/city/chrome/` (`TopBar.tsx`, `Chrome.module.css`), `view3d/` (`CityView3D.tsx`,
+`camera.ts`, `camera.test.ts`), new `chrome/TopBar.test.tsx`; `feature_docs/frontend/feature_city.md`.
+**Outside:** `OrbitRig.tsx` (its `autoRotate` prop already exists), `Prefs` / `gridline.state`,
+`shared/**`, the Isometric view.
 
 **Docs consulted**
 
@@ -97,25 +98,27 @@ fly-to behave as before. On: today's behaviour.
 | # | Choice | Rejected | Why |
 |---|---|---|---|
 | DD1 | A glass button in `TopBar`, directly left of the 3D \| Isometric toggle (after Overview when shown); one click toggles rotating ↔ stopped; 3D only | Chip at top 64 / left 16 (NI-03 style) · keyboard shortcut | Operator, Decision 3 |
-| DD2 | Component-local `useState(true)` in `CityView3D`; resets to On on reload or after switching to Isometric and back | Field in `gridline.state` | Persisting changes the stored schema — §5 halt list; NI-03 DD3 made the same call |
+| DD2 | `AppState.autoRotate` (default `true`) + `toggleAutoRotate()`; not saved — `savePrefs` writes only mode / favs / recent. Survives 3D ↔ Isometric switches; a reload starts rotating | Field in `gridline.state` · `useState` in `CityView3D` | `TopBar` and `CityView3D` are siblings under `main.tsx` `City`, so the state must sit above both; persisting is Decision 2: no |
 | DD3 | Pure `autoRotating(selectedId, enabled)` in `camera.ts`, true only when nothing is selected and enabled | Inline `&&` in JSX | Testable seam for the rule; `camera.ts` already holds `CAMERA.autoRotate` |
-| DD4 | Chip styles rebuilt in `CityView3D.module.css` (`.toggle`, `.toggleOn`, `.toggleOff`), not imported from `viewIso` | Share NI-03's CSS | §0 *Reuse is designed*: features slices' views change independently; recorded as a rebuilt copy |
+| DD4 | Button styled as the existing `.glass` + `.overview` pair in `Chrome.module.css` (new `.rotate` class only for the icon gap) | New chip style | Same row, same look as Overview |
 
 **Conditions & their justification**
 
 | Condition | Whose problem | Evidence for the value | When it triggers | Default | If it is wrong | Removal criteria |
 |---|---|---|---|---|---|---|
-| Default On | 使用者 | handoff README: overview auto-rotates | every 3D mount | On | users must click Off each visit → revisit persistence (own item) | operator asks for a remembered choice |
-| Chip at top 64 / left 16, z 15 | 使用者 | NI-03 Decision 4; below the breadcrumb (top 16, ≈40 px tall); under modal z 30 | 3D only | — | overlaps breadcrumb | operator moves it |
+| Default On | 使用者 | handoff README: overview auto-rotates | app start / reload | On | users must click each visit → revisit persistence (own item) | operator asks for a remembered choice |
+| Button shown in 3D only | 使用者 | Isometric has no auto-rotate | `mode === 'iso'` hides it | — | a dead button in Isometric | Isometric gains rotation |
 
 **Module decomposition**
 
 | Module / function | Signature — params → returns | Single responsibility | Pure / effectful | Layer | New / reused |
 |---|---|---|---|---|---|
 | `view3d/camera.ts` · `autoRotating` | `(selectedId: string, enabled: boolean) → boolean` | Rotation rule: enabled and nothing selected | pure | logic (camera maths module) | New |
-| `view3d/CityView3D.tsx` · `AutoRotateToggle` | `({ on: boolean; onToggle: () => void }) → JSX` | `<button aria-pressed>` "Auto-rotate: On/Off"; stops pointerdown so a click never starts an orbit drag | view | view | New (rebuilt from NI-03 `BuildingsToggle`) |
-| `view3d/CityView3D.tsx` · `CityView3D` / `Scene` | public props unchanged; `Scene` gains `rotate: boolean` | Holds `useState(true)`; passes `autoRotating(selectedId, rotate)` to `OrbitRig` | view | view | Changed |
-| `CityView3D.module.css` | `.toggle`, `.toggleOn`, `.toggleOff` | Chip look (DD4) | — | view | New |
+| `main.tsx` · `AppState` | `+ autoRotate: boolean` · `+ toggleAutoRotate(): void` | Holds the on/off; initial `true`; not part of `Prefs` | store | adapter | Changed (⚑) |
+| `main.tsx` · `City` | — | Passes `autoRotate` / `toggleAutoRotate` to `TopBar` and `autoRotate` to `CityView3D` | wiring | wiring | Changed (⚑) |
+| `chrome/TopBar.tsx` · `TopBar` | `TopBarProps + autoRotate: boolean; onToggleRotate: () => void` | Renders `RotateButton` left of the view toggle when `mode === '3d'` | view | view | Changed |
+| `chrome/TopBar.tsx` · `RotateButton` | `({ on: boolean; onToggle: () => void }) → JSX` | `<button aria-pressed={on}>`; label per Decision 6 | view | view | New |
+| `view3d/CityView3D.tsx` · `CityView3D` / `Scene` | `CityView3DProps = CityViewProps & { autoRotate: boolean }` (`CityViewProps`, shared with `CityViewIso`, unchanged) | Passes `autoRotating(selectedId, autoRotate)` to `OrbitRig` | view | view | Changed |
 
 **Decisions**
 
@@ -124,26 +127,29 @@ fly-to behave as before. On: today's behaviour.
 | 1 | Split from NI-04 | Own item, after NI-04 | operator, 2026-11-10 |
 | 2 | Remember the choice across reloads | No — not written to `gridline.state`; a reload starts rotating | operator, 2026-11-10 |
 | 3 | Placement and control | A button left of the 3D \| Isometric toggle; clicking switches between stopped and rotating | operator, 2026-11-10 |
+| 5 | Where the state lives | `AppState.autoRotate` + `toggleAutoRotate`, edits flagged `main.tsx` | operator, 2026-11-10 |
 
-**Explicitly NOT changing:** `OrbitRig` (prop already exists), `AppState`, `Prefs` / `gridline.state`, `TopBar`,
-`CityViewIso`, fly-to / drag / zoom / pan, pins (NI-04).
+**Explicitly NOT changing:** `OrbitRig` (prop already exists), `Prefs` / `gridline.state` (`savePrefs` output
+keys stay mode / favs / recent), `CityViewIso`, fly-to / drag / zoom / pan, pins (NI-04).
 
 **Verification — success conditions**
 
 | Input / action | Expected observable outcome | Checked by |
 |---|---|---|
 | `autoRotating('', true)` · `('', false)` · `('payments', true)` | true · false · false | `auto` — unit test |
-| 3D overview → click "Auto-rotate: On" | label reads Off; a pin's on-screen position is unchanged over 1 s | `auto` — Playwright |
-| Off → click again | label On; pins move again | `auto` — Playwright |
-| Off → select a building → Overview | fly-to still runs; overview stays still | `auto` — Playwright |
-| Off → Isometric → 3D | chip reads On again (DD2) | `auto` — Playwright |
+| `TopBar` with `mode: '3d'` / `'iso'` | rotate button present / absent; clicking it calls `onToggleRotate` once | `auto` — unit test |
+| `savePrefs` after `toggleAutoRotate()` | stored JSON keys are still exactly mode, favs, recent | `auto` — unit test |
+| 3D overview → click the rotate button | button shows the stopped state; a pin's on-screen position is unchanged over 1 s | `auto` — Playwright |
+| click again | rotating state; pins move again | `auto` — Playwright |
+| stopped → select a building → Overview | fly-to still runs; overview stays still | `auto` — Playwright |
+| stopped → Isometric → 3D | button absent in Isometric; back in 3D still stopped (DD2) | `auto` — Playwright |
+| reload | rotating again | `auto` — Playwright |
 | 3D 總覽按 Auto-rotate 切到 Off | 城市停止轉動，拖曳、縮放、點建築飛過去都照常，console 沒有錯誤 | `manual` — operator |
 
 **Open Decisions**
 
 | # | Question | Recommendation |
 |---|---|---|
-| 5 | Where the on/off state lives, now that `TopBar` (renders it) and `CityView3D` (uses it) are siblings in `main.tsx` | Store field `autoRotate` + action `toggleAutoRotate` in `AppState`, not saved to `gridline.state` (edits flagged `main.tsx`) |
 | 6 | Button label | `⏸ Pause` while rotating / `▶ Rotate` while stopped, `aria-pressed` |
 | 4 | Manual Verification wording | as drafted above |
 
