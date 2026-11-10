@@ -19,3 +19,8 @@
 .pillDot { width: 7px; height: 7px; border-radius: 50%; background: var(--tone); box-shadow: 0 0 8px var(--tone); }
 .stem { width: 1px; height: 14px; background: rgba(130, 190, 255, 0.25); }
 .stemOn { background: var(--accent); }
+
+/* NI-04 overlay: no z-index / transform here, so pin z 0–10 still sorts under the top bar and info panel. */
+.pinLayer { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+/* Hidden until PinProjector places it on the first frame (it then sets display inline). */
+.pinAnchor { position: absolute; top: 0; left: 0; pointer-events: auto; display: none; }

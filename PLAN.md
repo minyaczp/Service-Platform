@@ -7,6 +7,7 @@
 | NI-02 · Fill CLAUDE.md placeholders | ✅ Complete — NI-02 |
 | NI-01 · Gridline Service City — Phase 1 frontend with mock data | ✅ Complete — NI-01 |
 | NI-03 · Isometric buildings on/off (simple view) | 🟡 Pending — NI-03 |
+| NI-04 · Pins as a DOM overlay (fix StrictMode unmount error) | ✅ Complete — NI-04 |
 
 ## New Instructions
 

@@ -19,6 +19,7 @@
 | `features/city/logic/fillers.ts` | `fillers(layout, seed)` | Deterministic background buildings, 18 px clear of services (Decided I1) |
 | `features/city/logic/arcs.ts` | `arcsOf(services, layout)` | Bezier arcs per `dependsOn` edge (Decided I2) |
 | `features/city/logic/world.ts` | `toWorld(px)`, `centreOf(fp)` | Plane px → world units |
+| `features/city/logic/pinProjection.ts` | `projectPin(anchor, cam, viewport)`, `samePlacement(a, b)`; `PinCamera`, `Viewport`, `PinPlacement` | World point → viewport px; hidden behind the camera or with a 0×0 viewport; z-index = camera distance from near→far mapped onto [10, 0] (drei `objectZIndex`, NI-04). `samePlacement`: < 0.1 px and same z-index → skip the DOM write |
 | `features/city/view3d/camera.ts` | `easeInOutCubic`, `tweenAt`, `flyTarget`, `overviewOf(plates)`, `CAMERA` | Camera tween maths and handoff camera constants; overview centred on the drawn plates, r = span × 120/72 (handoff ratio), `maxR` 260. Fog starts 30 past the overview r and fades over 170 |
 | `features/city/viewIso/isoTransform.ts` | `stageTransform(rot, zoom, selected?)`, `stageScale`, `clampZoom`, `ISO` | Iso stage CSS transform |
 | `features/city/viewIso/isoBoxes.ts` | `buildingBoxes`, `fillerBoxes`, `isoHeightOf` | Segments → CSS boxes with window / scaffold looks |
@@ -27,7 +28,12 @@
 | `features/city/chrome/TopBar.tsx` | `TopBar({ selected, mode, onOverview, onMode })` | Breadcrumb, Overview, view toggle |
 | `features/city/chrome/Legend.tsx` | `Legend()`, `Hint({ mode })` | Legend (Healthy / Degraded / Deploying / Down) and hint text |
 
-View internals (not public): `view3d/{Ground,Fillers,Building,Arcs,SelectionFx,OrbitRig,Pins}.tsx`,
+Pins (NI-04) are a DOM overlay, not drei `<Html>`: `view3d/PinLayer.tsx` renders every pin beside the canvas
+(no stacking context, so pin z 0–10 stays under the top bar z 15 and info panel z 20) and registers each element;
+`view3d/PinProjector.tsx`, inside the canvas, projects the anchors (roof top + `PIN_LIFT` 1.8) every frame and
+writes `transform` / `z-index` / `display` only when the placement changed.
+
+View internals (not public): `view3d/{Ground,Fillers,Building,Arcs,SelectionFx,OrbitRig,Pins,PinLayer,PinProjector}.tsx`,
 `view3d/{assets,textures}.ts`.
 
 ## Dependencies
@@ -42,8 +48,9 @@ Rebuilt: health colours also in `shared/ui/tokens.css` ([architecture](../featur
 
 ## Unit Tests
 
-`src/features/city/logic/{layout,visual,scene}.test.ts`, `src/features/city/view3d/camera.test.ts` —
-**27 cases**, `npm --prefix frontend test`. Pure, no DOM.
+`src/features/city/logic/{layout,visual,scene,pinProjection}.test.ts`,
+`src/features/city/view3d/{camera.test.ts,PinLayer.test.tsx}`, `src/features/city/viewIso/isoBoxes.test.ts` —
+**41 cases**, `npm --prefix frontend test`. Pure, no DOM, except `PinLayer` (jsdom + Testing Library).
 
 | Covers | Cases |
 |---|---|
@@ -53,9 +60,13 @@ Rebuilt: health colours also in `shared/ui/tokens.css` ([architecture](../featur
 | `segmentsOf` — four shapes, stacking to H; `constructionIndex` | 6 |
 | `fillers` — deterministic, 18 px clearance, size ranges | 3 |
 | `arcsOf` — one per edge, orphan skipped, control lifted | 3 |
-| `easeInOutCubic`, `flyTarget`, `tweenAt`, `stageTransform` / `stageScale` | 6 |
+| `easeInOutCubic`, `flyTarget`, `tweenAt`, `stageTransform` / `stageScale`; `overviewOf` — centred on 4 plates, r 171.43; no plates → r 120 | 8 |
+| `isoBoxes` — `buildingBoxes` / `markerBoxes` (NI-03 suite) | 3 |
+| `projectPin` — origin → viewport centre; NDC (1, 1) → top-right; behind camera hidden; z-index 10 at near, 0 at far; 0×0 viewport hidden (NI-04) | 5 |
+| `samePlacement` — < 0.1 px unchanged, larger move / z-index / shown↔hidden changed (NI-04) | 2 |
+| `PinLayer` — registers one element per pin and releases on unmount; click selects (NI-04) | 2 |
 
-**Not covered:** `CityView3D`, `CityViewIso`, `isoBoxes`, chrome components — effectful / need a browser
-(manual Verification row).
+**Not covered:** `CityView3D`, `CityViewIso`, `PinProjector`, chrome components — effectful / need WebGL or a
+browser (manual Verification row; NI-04's console count is a Playwright script, not part of the suite).
 
 **Counterpart:** none — this feature lives in one app until `backend/` exists.

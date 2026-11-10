@@ -4,7 +4,7 @@
 
 | App | Stack | Status |
 |---|---|---|
-| `frontend/` | React 19 + TypeScript 6 (strict) + Vite 8; three.js via @react-three/fiber + drei; Zustand; CSS Modules over CSS-variable tokens; Scalar | Phase 1, NI-01 |
+| `frontend/` | React 19 + TypeScript 6 (strict) + Vite 8; three.js via @react-three/fiber (drei removed in NI-04); Zustand; CSS Modules over CSS-variable tokens; Scalar | Phase 1, NI-01 |
 | `backend/` | Go | Not started. Will read Helm-chart annotations and Prometheus, push over SSE |
 
 The apps share no code. A shape both need is written once in each (`CLAUDE.md` §Structure rule 3).
@@ -50,7 +50,7 @@ search text, iso rotation / zoom) is component-local (NI-01 Decided I4).
 |---|---|---|
 | Health colours | `features/city/logic/visual.ts` (`healthColor`, hex for WebGL) · `shared/ui/tokens.css` (`--health-*`) | handoff README §Attribute mapping |
 | Health labels | `features/inspect/InfoPanel.tsx` (`LABEL`) | handoff README |
-| Plate px → world units (`÷10`, `÷7`) | `features/city/logic/world.ts`, `visual.ts` | demo `Service City.dc.html` |
+| Plate px → world units (3D `÷ PLANE_PX_PER_UNIT` = 7, demo 10; iso height `× 7`) | `features/city/logic/world.ts`, `visual.ts` | demo `Service City.dc.html` |
 
 ## Detail contract
 

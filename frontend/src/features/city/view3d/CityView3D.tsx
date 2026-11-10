@@ -1,11 +1,11 @@
-import { Component, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { Component, useCallback, useEffect, useMemo, useRef, useState, type ReactNode, type RefObject } from 'react';
 import { Canvas } from '@react-three/fiber';
 import type { CityLayout, Kind, Selection, Service } from '../../../shared/domain/service';
 import { arcsOf } from '../logic/arcs';
 import { districtOf, districtTable } from '../logic/districts';
 import { fillers } from '../logic/fillers';
 import { heightOf } from '../logic/visual';
-import { centreOf } from '../logic/world';
+import { centreOf, type Vec3 } from '../logic/world';
 import { Arcs } from './Arcs';
 import { AssetsContext, createAssets, disposeAssets } from './assets';
 import { Building, topOf } from './Building';
@@ -13,7 +13,9 @@ import { flyTarget, overviewOf } from './camera';
 import { Fillers } from './Fillers';
 import { Ground, Plate } from './Ground';
 import { OrbitRig } from './OrbitRig';
-import { Pin } from './Pins';
+import { PinLayer } from './PinLayer';
+import { PinProjector } from './PinProjector';
+import { PIN_LIFT } from './Pins';
 import { SelectionFx } from './SelectionFx';
 import s from './CityView3D.module.css';
 
@@ -35,17 +37,44 @@ class GlBoundary extends Component<{ readonly children: ReactNode }, { readonly 
   render() { return this.state.failed ? <div className={s.error}>{WEBGL_FAILED}</div> : this.props.children; }
 }
 
-/** WebGL city (handoff §City view 3D). */
+/** Stem-tip anchor of every placed service: roof top + PIN_LIFT, in world units. */
+function pinAnchors(services: readonly Service[], layout: CityLayout): ReadonlyMap<string, Vec3> {
+  const anchors = new Map<string, Vec3>();
+  for (const svc of services) {
+    const fp = layout.footprints.get(svc.reg.id);
+    if (!fp) continue;
+    const c = centreOf(fp);
+    anchors.set(svc.reg.id, { x: c.x, y: topOf(svc, kindOf(svc)) + PIN_LIFT, z: c.z });
+  }
+  return anchors;
+}
+
+/** Pin DOM elements by service id, filled by `PinLayer` and read each frame by `PinProjector`. */
+function usePinElements() {
+  const elements = useRef(new Map<string, HTMLElement>());
+  const register = useCallback((id: string, el: HTMLElement | null) => {
+    if (el) elements.current.set(id, el);
+    else elements.current.delete(id);
+  }, []);
+  return { elements, register };
+}
+
+/** WebGL city (handoff §City view 3D); pins are a DOM overlay beside the canvas (NI-04). */
 export function CityView3D(props: CityViewProps) {
   const [ready, setReady] = useState(false);
+  const { elements, register } = usePinElements();
+  const anchors = useMemo(() => pinAnchors(props.services, props.layout), [props.services, props.layout]);
+  const pinned = useMemo(() => props.services.filter((x) => anchors.has(x.reg.id)), [props.services, anchors]);
+  const selectedId = props.selection.kind === 'service' ? props.selection.id : '';
   return (
     <div className={s.host}>
       <GlBoundary>
         <Canvas dpr={[1, 2]} camera={{ fov: 36, near: 0.5, far: 800 }} fallback={<div className={s.error}>{WEBGL_FAILED}</div>}
           onCreated={({ gl }) => { gl.setClearColor(0x070b13, 1); setReady(true); }}>
-          <Scene {...props} />
+          <Scene {...props} anchors={anchors} elements={elements} />
         </Canvas>
       </GlBoundary>
+      <PinLayer services={pinned} selectedId={selectedId} onSelect={props.onSelect} register={register} />
       {!ready && <div className={s.message}>LOADING CITY…</div>}
     </div>
   );
@@ -60,9 +89,13 @@ function useGoal(services: readonly Service[], layout: CityLayout, selection: Se
   }, [services, layout, id]);
 }
 
-function Scene({ services, layout, selection, onSelect }: CityViewProps) {
-  const assets = useMemo(createAssets, []);
-  useEffect(() => () => disposeAssets(assets), [assets]);
+interface SceneProps extends CityViewProps {
+  readonly anchors: ReadonlyMap<string, Vec3>;
+  readonly elements: RefObject<Map<string, HTMLElement>>;
+}
+
+function Scene({ services, layout, selection, onSelect, anchors, elements }: SceneProps) {
+  const assets = useAssets();
   const { hover, onHover } = useHover();
   const selectedId = selection.kind === 'service' ? selection.id : '';
   const goal = useGoal(services, layout, selection);
@@ -77,8 +110,16 @@ function Scene({ services, layout, selection, onSelect }: CityViewProps) {
       <Buildings services={services} layout={layout} selectedId={selectedId} hover={hover} onSelect={onSelect} onHover={onHover} />
       <Arcs arcs={arcs} />
       <OrbitRig goal={goal} autoRotate={selectedId === ''} />
+      <PinProjector anchors={anchors} elements={elements} />
     </AssetsContext.Provider>
   );
+}
+
+/** Shared geometries and textures for the scene's lifetime. */
+function useAssets() {
+  const assets = useMemo(createAssets, []);
+  useEffect(() => () => disposeAssets(assets), [assets]);
+  return assets;
 }
 
 /** Hovered building id ('' for none); the cursor turns into a pointer over a building. */
@@ -125,10 +166,8 @@ function Buildings({ services, layout, selectedId, hover, onSelect, onHover }: B
         if (!fp) return [];
         const id = svc.reg.id;
         const kind = kindOf(svc);
-        const c = centreOf(fp);
         return [
           <Building key={id} service={svc} kind={kind} fp={fp} highlighted={id === selectedId || id === hover} onSelect={onSelect} onHover={onHover} />,
-          <Pin key={`${id}-pin`} service={svc} x={c.x} y={topOf(svc, kind)} z={c.z} selected={id === selectedId} onSelect={onSelect} />,
           ...(id === selectedId ? [<SelectionFx key={`${id}-sel`} fp={fp} H={heightOf(svc.status.rps)} />] : []),
         ];
       })}
